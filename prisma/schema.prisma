@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Proveedor {
+  id        String   @id @default(uuid())
+  nombre    String   @db.VarChar(255)
+  notas     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  descuentos DescuentoProveedor[]
+  stocks     Stock[]
+}
+
+model DescuentoProveedor {
+  id          String    @id @default(uuid())
+  proveedorId String
+  descripcion String    @db.VarChar(255)
+  porcentaje  Decimal   @db.Decimal(5, 2)
+  proveedor   Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+}
+
+model Stock {
+  id               String    @id @default(uuid())
+  proveedorId      String
+  codigo           String    @db.VarChar(100)
+  codigoOriginal   String?   @db.VarChar(100)
+  descripcion      String    @db.VarChar(255)
+  cantidad         Int       @default(0)
+  cantidadCritica  Int       @default(0)
+  cantidadSugerida Int       @default(0)
+  fechaPedido      DateTime?
+  fechaRecibido    DateTime?
+  precioCosto      Decimal   @default(0) @db.Decimal(10, 2)
+  precioLista      Decimal   @default(0) @db.Decimal(10, 2)
+  precioVenta      Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
+}
