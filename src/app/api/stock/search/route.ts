@@ -14,7 +14,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const results = await StockRepository.search({ proveedorId, codigo })
-    return NextResponse.json(results)
+    const serialized = results.map(r => ({
+      ...r,
+      precioCosto: r.precioCosto.toNumber(),
+      precioLista: r.precioLista.toNumber(),
+      precioVenta: r.precioVenta.toNumber(),
+    }))
+    return NextResponse.json(serialized)
   } catch (error) {
     console.error("Error en búsqueda de stock:", error)
     return NextResponse.json({ error: "Error al buscar" }, { status: 500 })
