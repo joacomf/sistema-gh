@@ -28,7 +28,7 @@ if (process.env.PLAYWRIGHT_TEST === "true") {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers,
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account}) {
       if (account?.provider === "credentials" && process.env.PLAYWRIGHT_TEST === "true") {
         return true
       }

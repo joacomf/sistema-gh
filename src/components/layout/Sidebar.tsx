@@ -1,10 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Package, Settings, ChevronDown, ClipboardList, FileText } from "lucide-react"
+import {usePathname} from "next/navigation"
+import {ChevronDown, Home, Package, Settings} from "lucide-react"
 import * as Accordion from "@radix-ui/react-accordion"
-import { cn } from "@/lib/utils"
+import {cn} from "@/lib/utils"
 import Image from "next/image"
 
 const menu = [

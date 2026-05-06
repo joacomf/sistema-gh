@@ -10,8 +10,12 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
   const toggle = (id: string) => {
     setExpanded(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
+        if (next.has(id)) {
+            next.delete(id)
+        } else {
+            next.add(id)
+        }
+        return next
     })
   }
 
