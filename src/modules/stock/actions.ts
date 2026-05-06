@@ -1,11 +1,21 @@
 "use server"
 
-import { StockRepository } from "@/repositories/stock.repository"
+import { StockRepository, StockWithProveedor } from "@/repositories/stock.repository"
 import { revalidatePath } from "next/cache"
+
+function serializeStock(stock: StockWithProveedor) {
+  return {
+    ...stock,
+    precioCosto: stock.precioCosto.toNumber(),
+    precioLista: stock.precioLista.toNumber(),
+    precioVenta: stock.precioVenta.toNumber(),
+  }
+}
 
 export async function getStockAction() {
   try {
-    return await StockRepository.findAll()
+    const data = await StockRepository.findAll()
+    return data.map(serializeStock)
   } catch (error) {
     console.error("Error al obtener stock:", error)
     throw new Error("No se pudo cargar el stock")
@@ -29,7 +39,7 @@ export async function createStockAction(data: {
   try {
     const stock = await StockRepository.create(data)
     revalidatePath("/dashboard/stock")
-    return { success: true, data: stock }
+    return { success: true, data: serializeStock(stock) }
   } catch (error) {
     console.error("Error al crear stock:", error)
     return { success: false, error: "No se pudo crear el registro de stock" }
@@ -56,7 +66,7 @@ export async function updateStockAction(
   try {
     const stock = await StockRepository.update(id, data)
     revalidatePath("/dashboard/stock")
-    return { success: true, data: stock }
+    return { success: true, data: serializeStock(stock) }
   } catch (error) {
     console.error("Error al actualizar stock:", error)
     return { success: false, error: "No se pudo actualizar el registro de stock" }

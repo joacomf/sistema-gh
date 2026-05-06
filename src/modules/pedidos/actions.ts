@@ -1,11 +1,24 @@
 "use server"
 
-import { RepuestoPedidoRepository } from "@/repositories/repuestoPedido.repository"
+import { RepuestoPedidoRepository, RepuestoPedidoWithStock } from "@/repositories/repuestoPedido.repository"
 import { revalidatePath } from "next/cache"
+
+function serializeRepuestoPedido(r: RepuestoPedidoWithStock) {
+  return {
+    ...r,
+    stock: {
+      ...r.stock,
+      precioCosto: r.stock.precioCosto.toNumber(),
+      precioLista: r.stock.precioLista.toNumber(),
+      precioVenta: r.stock.precioVenta.toNumber(),
+    },
+  }
+}
 
 export async function getRepuestosAPedirAction() {
   try {
-    return await RepuestoPedidoRepository.findAPedir()
+    const data = await RepuestoPedidoRepository.findAPedir()
+    return data.map(serializeRepuestoPedido)
   } catch (error) {
     console.error("Error al obtener repuestos a pedir:", error)
     throw new Error("No se pudieron cargar los repuestos a pedir")
@@ -14,7 +27,8 @@ export async function getRepuestosAPedirAction() {
 
 export async function getRepuestosPedidosAction() {
   try {
-    return await RepuestoPedidoRepository.findPedidos()
+    const data = await RepuestoPedidoRepository.findPedidos()
+    return data.map(serializeRepuestoPedido)
   } catch (error) {
     console.error("Error al obtener repuestos pedidos:", error)
     throw new Error("No se pudieron cargar los repuestos pedidos")
