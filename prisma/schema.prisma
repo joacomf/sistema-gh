@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Proveedor {
@@ -45,5 +46,40 @@ model Stock {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
+  proveedor        Proveedor        @relation(fields: [proveedorId], references: [id])
+  repuestosPedido  RepuestoPedido[]
+  facturaItems     FacturaItem[]
+}
+
+model RepuestoPedido {
+  id            String    @id @default(uuid())
+  stockId       String
+  cantidad      Int
+  fechaPedido   DateTime?
+  fechaRecibido DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+}
+
+model Factura {
+  id        String   @id @default(uuid())
+  numero    String   @db.VarChar(100)
+  importe   Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items FacturaItem[]
+}
+
+model FacturaItem {
+  id        String   @id @default(uuid())
+  facturaId String
+  stockId   String
+  cantidad  Int
+  createdAt DateTime @default(now())
+
+  factura Factura @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  stock   Stock   @relation(fields: [stockId], references: [id], onDelete: Restrict)
 }

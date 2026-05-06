@@ -2,15 +2,16 @@
 
 import { useState } from "react"
 import { createProveedorAction, updateProveedorAction } from "../actions"
+import { X, Plus } from "lucide-react"
 
 type Descuento = { id?: string; descripcion: string; porcentaje: number }
 
-export default function ProveedorForm({ 
-  proveedor, 
-  onSuccess 
-}: { 
+export default function ProveedorForm({
+  proveedor,
+  onSuccess
+}: {
   proveedor?: { id: string, nombre: string, notas: string | null, descuentos: Descuento[] },
-  onSuccess: () => void 
+  onSuccess: () => void
 }) {
   const [nombre, setNombre] = useState(proveedor?.nombre || "")
   const [notas, setNotas] = useState(proveedor?.notas || "")
@@ -22,9 +23,9 @@ export default function ProveedorForm({
   }
 
   const handleDescuentoChange = (index: number, field: keyof Descuento, value: string | number) => {
-    const newDescuentos = [...descuentos]
-    newDescuentos[index] = { ...newDescuentos[index], [field]: value }
-    setDescuentos(newDescuentos)
+    const updated = [...descuentos]
+    updated[index] = { ...updated[index], [field]: value }
+    setDescuentos(updated)
   }
 
   const handleRemoveDescuento = (index: number) => {
@@ -34,7 +35,6 @@ export default function ProveedorForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
     try {
       const data = { nombre, notas, descuentos }
       if (proveedor?.id) {
@@ -52,80 +52,89 @@ export default function ProveedorForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">
-        {proveedor ? "Editar Proveedor" : "Nuevo Proveedor"}
-      </h3>
-      
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Nombre</label>
-        <input 
-          type="text" 
-          required 
-          value={nombre} 
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          Nombre <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          required
+          value={nombre}
           onChange={e => setNombre(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          placeholder="Nombre del proveedor"
+          className="block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Notas</label>
-        <textarea 
-          value={notas} 
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">Notas</label>
+        <textarea
+          value={notas}
           onChange={e => setNotas(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          rows={3}
+          placeholder="Observaciones opcionales"
+          className="block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition resize-none"
         />
       </div>
 
-      <div className="pt-4 border-t border-gray-100">
-        <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-medium text-gray-700">Descuentos</label>
-          <button 
-            type="button" 
+      <div className="border-t border-slate-100 pt-5">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-medium text-slate-700">Descuentos</span>
+          <button
+            type="button"
             onClick={handleAddDescuento}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
+            className="flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors"
           >
-            + Agregar Descuento
+            <Plus size={15} />
+            Agregar descuento
           </button>
         </div>
-        
-        {descuentos.map((desc, i) => (
-          <div key={i} className="flex gap-2 mb-2 items-start">
-            <input 
-              type="text" 
-              placeholder="Descripción (ej. Pago Contado)" 
-              value={desc.descripcion}
-              onChange={e => handleDescuentoChange(i, 'descripcion', e.target.value)}
-              className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-              required
-            />
-            <input 
-              type="number" 
-              step="0.01"
-              placeholder="%" 
-              value={desc.porcentaje}
-              onChange={e => handleDescuentoChange(i, 'porcentaje', parseFloat(e.target.value))}
-              className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-              required
-            />
-            <button 
-              type="button"
-              onClick={() => handleRemoveDescuento(i)}
-              className="p-2 text-red-500 hover:text-red-700"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
+
+        <div className="space-y-2">
+          {descuentos.map((desc, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder="Descripción (ej: Pago contado)"
+                value={desc.descripcion}
+                onChange={e => handleDescuentoChange(i, "descripcion", e.target.value)}
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                required
+              />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                placeholder="%"
+                value={desc.porcentaje}
+                onChange={e => handleDescuentoChange(i, "porcentaje", parseFloat(e.target.value))}
+                className="w-24 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveDescuento(i)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors shrink-0"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+          {descuentos.length === 0 && (
+            <p className="text-sm text-slate-400 py-1">Sin descuentos cargados.</p>
+          )}
+        </div>
       </div>
 
-      <div className="pt-4 flex justify-end">
-        <button 
-          type="submit" 
+      <div className="pt-2 flex justify-end">
+        <button
+          type="submit"
           disabled={loading}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
         >
-          {loading ? "Guardando..." : "Guardar Proveedor"}
+          {loading ? "Guardando..." : "Guardar proveedor"}
         </button>
       </div>
     </form>

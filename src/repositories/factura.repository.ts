@@ -1,0 +1,94 @@
+import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
+
+export type FacturaWithItems = Prisma.FacturaGetPayload<{
+  include: { items: { include: { stock: { include: { proveedor: true } } } } }
+}>
+
+export const FacturaRepository = {
+  async findAll(): Promise<FacturaWithItems[]> {
+    return prisma.factura.findMany({
+      include: {
+        items: {
+          include: { stock: { include: { proveedor: true } } },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    })
+  },
+
+  async create(data: {
+    numero: string
+    importe: number
+    items: { stockId: string; cantidad: number }[]
+  }): Promise<FacturaWithItems> {
+    return prisma.$transaction(async (tx) => {
+      const factura = await tx.factura.create({
+        data: {
+          numero: data.numero,
+          importe: new Prisma.Decimal(data.importe),
+        },
+      })
+
+      await tx.facturaItem.createMany({
+        data: data.items.map((item) => ({
+          facturaId: factura.id,
+          stockId: item.stockId,
+          cantidad: item.cantidad,
+        })),
+      })
+
+      for (const item of data.items) {
+        await tx.stock.update({
+          where: { id: item.stockId },
+          data: { cantidad: { increment: item.cantidad } },
+        })
+
+        const pedidos = await tx.repuestoPedido.findMany({
+          where: {
+            stockId: item.stockId,
+            fechaPedido: { not: null },
+            fechaRecibido: null,
+          },
+          orderBy: { fechaPedido: "asc" },
+        })
+
+        let remaining = item.cantidad
+
+        for (const pedido of pedidos) {
+          if (remaining <= 0) break
+
+          if (remaining >= pedido.cantidad) {
+            await tx.repuestoPedido.update({
+              where: { id: pedido.id },
+              data: { fechaRecibido: new Date() },
+            })
+            remaining -= pedido.cantidad
+          } else {
+            // Entrega parcial: reduce cantidad y vuelve a "a pedir"
+            await tx.repuestoPedido.update({
+              where: { id: pedido.id },
+              data: {
+                cantidad: pedido.cantidad - remaining,
+                fechaPedido: null,
+                fechaRecibido: null,
+              },
+            })
+            remaining = 0
+          }
+        }
+      }
+
+      return tx.factura.findUniqueOrThrow({
+        where: { id: factura.id },
+        include: {
+          items: {
+            include: { stock: { include: { proveedor: true } } },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      })
+    })
+  },
+}

@@ -76,5 +76,28 @@ export const StockRepository = {
     return prisma.stock.delete({
       where: { id }
     })
+  },
+
+  async search(params: { proveedorId?: string; codigo?: string }): Promise<StockWithProveedor[]> {
+    const conditions: Prisma.StockWhereInput[] = []
+
+    if (params.proveedorId) {
+      conditions.push({ proveedorId: params.proveedorId })
+    }
+
+    if (params.codigo) {
+      conditions.push({
+        OR: [
+          { codigo: { contains: params.codigo } },
+          { codigoOriginal: { contains: params.codigo } }
+        ]
+      })
+    }
+
+    return prisma.stock.findMany({
+      where: conditions.length > 0 ? { AND: conditions } : undefined,
+      include: { proveedor: true },
+      orderBy: { createdAt: "desc" }
+    })
   }
 }

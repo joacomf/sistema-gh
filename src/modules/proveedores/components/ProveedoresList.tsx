@@ -2,69 +2,92 @@
 
 import { useState } from "react"
 import { deleteProveedorAction } from "../actions"
+import { Pencil, Trash2 } from "lucide-react"
 
-export default function ProveedoresList({ proveedores, onEdit }: { 
-  proveedores: any[], 
-  onEdit: (p: any) => void 
+export default function ProveedoresList({ proveedores, onEdit }: {
+  proveedores: any[],
+  onEdit: (p: any) => void
 }) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este proveedor?")) return
-    
+    if (!confirm("¿Está seguro de que desea eliminar este proveedor?")) return
     setIsDeleting(id)
     try {
       await deleteProveedorAction(id)
-    } catch (e) {
-      alert("Error al eliminar")
+    } catch {
+      alert("Error al eliminar el proveedor")
     } finally {
       setIsDeleting(null)
     }
   }
 
   return (
-    <div className="overflow-x-auto shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg">
-      <table className="min-w-full divide-y divide-gray-300">
-        <thead className="bg-gray-50">
+    <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+      <table className="min-w-full divide-y divide-slate-200">
+        <thead className="bg-slate-50">
           <tr>
-            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Nombre</th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Descuentos</th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Notas</th>
-            <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Acciones</span></th>
+            <th className="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-slate-700">
+              Nombre
+            </th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-slate-700">
+              Descuentos
+            </th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-slate-700">
+              Notas
+            </th>
+            <th className="py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-slate-700">
+              Acciones
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-slate-100">
           {proveedores.map((proveedor) => (
-            <tr key={proveedor.id}>
-              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{proveedor.nombre}</td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {proveedor.descuentos?.map((d: any) => (
-                  <span key={d.id} className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 mr-1">
-                    {d.descripcion}: {d.porcentaje}%
-                  </span>
-                ))}
+            <tr key={proveedor.id} className="hover:bg-slate-50 transition-colors">
+              <td className="py-4 pl-6 pr-3 text-base font-semibold text-slate-900">
+                {proveedor.nombre}
               </td>
-              <td className="px-3 py-4 text-sm text-gray-500 truncate max-w-xs">{proveedor.notas}</td>
-              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                <button 
-                  onClick={() => onEdit(proveedor)} 
-                  className="text-indigo-600 hover:text-indigo-900 mr-4"
-                >
-                  Editar
-                </button>
-                <button 
-                  onClick={() => handleDelete(proveedor.id)} 
-                  disabled={isDeleting === proveedor.id}
-                  className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                >
-                  {isDeleting === proveedor.id ? "Eliminando..." : "Eliminar"}
-                </button>
+              <td className="px-4 py-4 text-sm text-slate-600">
+                <div className="flex flex-wrap gap-1.5">
+                  {proveedor.descuentos?.map((d: any) => (
+                    <span
+                      key={d.id}
+                      className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200"
+                    >
+                      {d.descripcion}: {d.porcentaje}%
+                    </span>
+                  ))}
+                </div>
+              </td>
+              <td className="px-4 py-4 text-sm text-slate-500 max-w-xs truncate">
+                {proveedor.notas}
+              </td>
+              <td className="py-4 pl-3 pr-6">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => onEdit(proveedor)}
+                    className="flex items-center gap-1.5 rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <Pencil size={14} />
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(proveedor.id)}
+                    disabled={isDeleting === proveedor.id}
+                    className="flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                    {isDeleting === proveedor.id ? "Eliminando..." : "Eliminar"}
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
           {proveedores.length === 0 && (
             <tr>
-              <td colSpan={4} className="text-center py-8 text-gray-500">No hay proveedores registrados.</td>
+              <td colSpan={4} className="py-12 text-center text-slate-400">
+                No hay proveedores registrados.
+              </td>
             </tr>
           )}
         </tbody>
