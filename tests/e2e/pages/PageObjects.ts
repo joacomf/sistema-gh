@@ -80,6 +80,27 @@ export class DashboardPage {
     await expect(this.page.getByRole('heading', { name: 'Inventario de Stock' })).toBeVisible();
   }
 
+  async goToRecepcion() {
+    await this.page.getByText('Gestión').click();
+    await this.page.getByRole('link', { name: 'Recepción' }).click();
+    await expect(this.page.getByRole('heading', { name: 'Recepción de mercadería' })).toBeVisible();
+  }
+
+  async registrarIngreso(provName: string, nroFactura: string, stockCodigo: string, importe: string) {
+    await this.page.selectOption('select', { label: provName });
+    await this.page.fill('input[placeholder*="0001"]', nroFactura);
+
+    await this.page.fill('input[placeholder*="código"]', stockCodigo);
+    await this.page.waitForSelector('button:has-text("' + stockCodigo + '")', { timeout: 3000 });
+    await this.page.click('button:has-text("' + stockCodigo + '")');
+
+    await expect(this.page.locator('td.font-mono', { hasText: stockCodigo })).toBeVisible();
+
+    await this.page.fill('input[placeholder="0.00"]', importe);
+    await this.page.getByRole('button', { name: 'Confirmar Ingreso' }).click();
+    await this.page.waitForURL('**/dashboard/facturas');
+  }
+
   async createStock(provName: string, codigo: string, desc: string, precioLista: string) {
     await this.page.getByRole('button', { name: 'Nueva Pieza' }).click();
     
