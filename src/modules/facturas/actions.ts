@@ -34,6 +34,7 @@ export async function getFacturasAction() {
 }
 
 export async function createFacturaAction(data: {
+  proveedorId: string
   numero: string
   importe: number
   items: { stockId: string; cantidad: number }[]
