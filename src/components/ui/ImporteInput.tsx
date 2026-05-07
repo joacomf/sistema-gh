@@ -12,9 +12,13 @@ interface ImporteInputProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
-function formatImporte(value: number): string {
+export function formatImporte(value: number): string {
   if (!value && value !== 0) return ""
   return value.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export function Importe({ value, className }: { value: number; className?: string }) {
+  return <span className={className}>$ {formatImporte(value)}</span>
 }
 
 function parseImporte(str: string): number {

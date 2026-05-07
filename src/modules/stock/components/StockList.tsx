@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { deleteStockAction } from "../actions"
 import { Pencil, Trash2 } from "lucide-react"
+import { Importe } from "@/components/ui/ImporteInput"
 
 export default function StockList({ stock, onEdit }: {
   stock: any[],
@@ -78,7 +79,7 @@ export default function StockList({ stock, onEdit }: {
                   {item.descripcion}
                 </td>
                 <td className="px-4 py-4 text-sm font-semibold text-slate-900 text-right whitespace-nowrap">
-                  ${Number(item.precioVenta).toFixed(2)}
+                  <Importe value={Number(item.precioVenta)} />
                 </td>
                 <td className="py-4 pl-3 pr-6">
                   <div className="flex items-center justify-end gap-2">

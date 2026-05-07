@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import React from "react"
+import { Importe } from "@/components/ui/ImporteInput"
 
 export default function FacturasList({ facturas }: { facturas: any[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -53,7 +54,7 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
                     {factura.proveedor?.nombre ?? "—"}
                   </td>
                   <td className="px-4 py-4 text-sm font-semibold text-slate-900 text-right">
-                    ${Number(factura.importe).toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+                    <Importe value={Number(factura.importe)} />
                   </td>
                   <td className="px-4 py-4 text-sm text-slate-500">
                     {new Date(factura.createdAt).toLocaleDateString("es-AR")}
