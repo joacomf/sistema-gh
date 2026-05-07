@@ -17,6 +17,7 @@ const menu = [
       { name: "Proveedores", href: "/dashboard/proveedores" },
       { name: "Pedidos", href: "/dashboard/pedidos" },
       { name: "Facturas", href: "/dashboard/facturas" },
+      { name: "Recepción", href: "/dashboard/recepcion" },
     ]
   },
   { name: "Configuración", icon: Settings, href: "/dashboard/configuracion" },
