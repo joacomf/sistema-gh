@@ -2,13 +2,17 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 
 export type FacturaWithItems = Prisma.FacturaGetPayload<{
-  include: { items: { include: { stock: { include: { proveedor: true } } } } }
+  include: {
+    proveedor: true
+    items: { include: { stock: { include: { proveedor: true } } } }
+  }
 }>
 
 export const FacturaRepository = {
   async findAll(): Promise<FacturaWithItems[]> {
     return prisma.factura.findMany({
       include: {
+        proveedor: true,
         items: {
           include: { stock: { include: { proveedor: true } } },
           orderBy: { createdAt: "asc" },
@@ -19,6 +23,7 @@ export const FacturaRepository = {
   },
 
   async create(data: {
+    proveedorId: string
     numero: string
     importe: number
     items: { stockId: string; cantidad: number }[]
@@ -26,6 +31,7 @@ export const FacturaRepository = {
     return prisma.$transaction(async (tx) => {
       const factura = await tx.factura.create({
         data: {
+          proveedorId: data.proveedorId,
           numero: data.numero,
           importe: new Prisma.Decimal(data.importe),
         },
@@ -66,7 +72,6 @@ export const FacturaRepository = {
             })
             remaining -= pedido.cantidad
           } else {
-            // Entrega parcial: reduce cantidad y vuelve a "a pedir"
             await tx.repuestoPedido.update({
               where: { id: pedido.id },
               data: {
@@ -83,6 +88,7 @@ export const FacturaRepository = {
       return tx.factura.findUniqueOrThrow({
         where: { id: factura.id },
         include: {
+          proveedor: true,
           items: {
             include: { stock: { include: { proveedor: true } } },
             orderBy: { createdAt: "asc" },
