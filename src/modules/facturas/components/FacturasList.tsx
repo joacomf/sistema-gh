@@ -26,6 +26,7 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
           <tr>
             <th className="py-3.5 pl-4 pr-2 w-8" />
             <th className="px-4 py-3.5 text-left text-sm font-semibold text-slate-700">Número</th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-slate-700">Proveedor</th>
             <th className="px-4 py-3.5 text-right text-sm font-semibold text-slate-700">Importe</th>
             <th className="px-4 py-3.5 text-left text-sm font-semibold text-slate-700">Fecha</th>
             <th className="px-4 py-3.5 text-right text-sm font-semibold text-slate-700 pr-6">Ítems</th>
@@ -48,6 +49,9 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
                   <td className="px-4 py-4 text-base font-semibold text-slate-900">
                     {factura.numero}
                   </td>
+                  <td className="px-4 py-4 text-sm text-slate-600">
+                    {factura.proveedor?.nombre ?? "—"}
+                  </td>
                   <td className="px-4 py-4 text-sm font-semibold text-slate-900 text-right">
                     ${Number(factura.importe).toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                   </td>
@@ -63,7 +67,7 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
 
                 {isOpen && (
                   <tr className="bg-slate-50/60">
-                    <td colSpan={5} className="px-10 py-4">
+                    <td colSpan={6} className="px-10 py-4">
                       <table className="min-w-full">
                         <thead>
                           <tr>
@@ -92,7 +96,7 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
           })}
           {facturas.length === 0 && (
             <tr>
-              <td colSpan={5} className="py-12 text-center text-slate-400">
+              <td colSpan={6} className="py-12 text-center text-slate-400">
                 No hay facturas registradas.
               </td>
             </tr>
