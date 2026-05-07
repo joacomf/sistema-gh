@@ -19,6 +19,7 @@ model Proveedor {
 
   descuentos DescuentoProveedor[]
   stocks     Stock[]
+  facturas   Factura[]
 }
 
 model DescuentoProveedor {
@@ -64,13 +65,15 @@ model RepuestoPedido {
 }
 
 model Factura {
-  id        String   @id @default(uuid())
-  numero    String   @db.VarChar(100)
-  importe   Decimal  @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  proveedorId String
+  numero      String   @db.VarChar(100)
+  importe     Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  items FacturaItem[]
+  proveedor Proveedor   @relation(fields: [proveedorId], references: [id])
+  items     FacturaItem[]
 }
 
 model FacturaItem {
