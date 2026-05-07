@@ -116,11 +116,18 @@ export default function ImporteInput({
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
+    let raw = e.target.value
     const rawCursor = e.target.selectionStart ?? raw.length
 
-    // Reject characters outside digits, comma, dot
     if (!/^[\d.,]*$/.test(raw)) return
+
+    // If user typed a new dot (numpad decimal key) and there's no comma yet,
+    // convert that dot to comma. Detect by counting dots vs previous value.
+    const prevDots = (inputStr.match(/\./g) || []).length
+    const newDots = (raw.match(/\./g) || []).length
+    if (!inputStr.includes(",") && newDots > prevDots) {
+      raw = raw.replace(/\.([^.]*)$/, ",$1")
+    }
 
     const formatted = formatWhileTyping(raw)
     pendingCursor.current = computeCursor(raw, rawCursor, formatted)
