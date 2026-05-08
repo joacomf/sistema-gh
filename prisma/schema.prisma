@@ -50,6 +50,7 @@ model Stock {
   proveedor        Proveedor        @relation(fields: [proveedorId], references: [id])
   repuestosPedido  RepuestoPedido[]
   facturaItems     FacturaItem[]
+  ventaItems       VentaItem[]
 }
 
 model RepuestoPedido {
@@ -85,4 +86,49 @@ model FacturaItem {
 
   factura Factura @relation(fields: [facturaId], references: [id], onDelete: Cascade)
   stock   Stock   @relation(fields: [stockId], references: [id], onDelete: Restrict)
+}
+
+enum MetodoPago {
+  EFECTIVO
+  DEBITO
+  CREDITO
+  MERCADO_PAGO
+}
+
+model Venta {
+  id          String     @id @default(uuid())
+  descripcion String     @db.VarChar(500)
+  importe     Decimal    @db.Decimal(10, 2)
+  metodoPago  MetodoPago
+  facturada   Boolean    @default(false)
+  fecha       DateTime   @default(now())
+  createdAt   DateTime   @default(now())
+
+  items VentaItem[]
+}
+
+model VentaItem {
+  id             String  @id @default(uuid())
+  ventaId        String
+  stockId        String
+  descripcion    String  @db.VarChar(255)
+  cantidad       Int
+  precioUnitario Decimal @db.Decimal(10, 2)
+  subtotal       Decimal @db.Decimal(10, 2)
+
+  venta Venta @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Restrict)
+}
+
+model Gasto {
+  id          String   @id @default(uuid())
+  descripcion String   @db.VarChar(255)
+  importe     Decimal  @db.Decimal(10, 2)
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Configuracion {
+  clave String @id
+  valor String @db.VarChar(500)
 }
