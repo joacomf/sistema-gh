@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "npm run db:up && next start",
     "lint": "eslint",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "db:up": "docker compose -f local/docker-compose.yml up -d",
     "db:down": "docker compose -f local/docker-compose.yml down",
     "test:e2e": "docker compose -f local/docker-compose-test.yml up -d && sleep 5 && DATABASE_URL=\"mysql://root:root@localhost:3307/sistema_test\" npx prisma migrate deploy && PLAYWRIGHT_TEST=true DATABASE_URL=\"mysql://root:root@localhost:3307/sistema_test\" npm run build && DATABASE_URL=\"mysql://root:root@localhost:3307/sistema_test\" npx playwright test ; docker compose -f local/docker-compose-test.yml down"
@@ -43,6 +45,10 @@
     "prisma": "^6.4.1",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }
