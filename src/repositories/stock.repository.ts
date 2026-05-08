@@ -89,7 +89,8 @@ export const StockRepository = {
       conditions.push({
         OR: [
           { codigo: { contains: params.codigo } },
-          { codigoOriginal: { contains: params.codigo } }
+          { codigoOriginal: { contains: params.codigo } },
+          { descripcion: { contains: params.codigo } },
         ]
       })
     }
