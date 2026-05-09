@@ -50,8 +50,8 @@ export default function LibroDiarioPageClient({ ventas, gastos, fecha }: Props) 
     if (!confirm('¿Eliminar esta venta?')) return
     setLoadingId(id)
     try {
-      await eliminarVentaAction(id)
-      router.refresh()
+      const result = await eliminarVentaAction(id)
+      if (result.success) router.refresh()
     } finally {
       setLoadingId(null)
     }
@@ -61,8 +61,8 @@ export default function LibroDiarioPageClient({ ventas, gastos, fecha }: Props) 
     if (!confirm('¿Eliminar este egreso?')) return
     setLoadingId(id)
     try {
-      await eliminarGastoAction(id)
-      router.refresh()
+      const result = await eliminarGastoAction(id)
+      if (result.success) router.refresh()
     } finally {
       setLoadingId(null)
     }
@@ -72,11 +72,13 @@ export default function LibroDiarioPageClient({ ventas, gastos, fecha }: Props) 
     if (!gastoDesc.trim() || gastoImporte <= 0) return
     setSavingGasto(true)
     try {
-      await agregarGastoAction({ descripcion: gastoDesc, importe: gastoImporte })
-      setGastoDesc('')
-      setGastoImporte(0)
-      setShowGastoForm(false)
-      router.refresh()
+      const result = await agregarGastoAction({ descripcion: gastoDesc, importe: gastoImporte })
+      if (result.success) {
+        setGastoDesc('')
+        setGastoImporte(0)
+        setShowGastoForm(false)
+        router.refresh()
+      }
     } finally {
       setSavingGasto(false)
     }
