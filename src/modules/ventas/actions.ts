@@ -10,6 +10,7 @@ type CarritoItem = {
   stockId: string
   descripcion: string
   cantidad: number
+  precioCosto: number
   precioUnitario: number
   subtotal: number
 }
@@ -52,6 +53,7 @@ export async function checkoutAction(data: {
               stockId: i.stockId,
               descripcion: i.descripcion,
               cantidad: i.cantidad,
+              precioCosto: new Prisma.Decimal(i.precioCosto),
               precioUnitario: new Prisma.Decimal(i.precioUnitario),
               subtotal: new Prisma.Decimal(i.subtotal),
             })),
@@ -75,16 +77,10 @@ export async function checkoutAction(data: {
     revalidatePath('/dashboard/ventas')
     revalidatePath('/dashboard/stock')
 
-    const stockIds = data.carrito.map(i => i.stockId)
-    const stocks = await prisma.stock.findMany({
-      where: { id: { in: stockIds } },
-      select: { id: true, cantidadSugerida: true },
-    })
-    const stockMap = new Map(stocks.map(s => [s.id, s]))
     const reposicion: ReposicionItem[] = data.carrito.map(item => ({
       stockId: item.stockId,
       descripcion: item.descripcion,
-      cantidadSugerida: stockMap.get(item.stockId)?.cantidadSugerida ?? 10,
+      cantidadSugerida: item.cantidad,
     }))
 
     return { success: true, data: { ventaId: venta.id, reposicion } }

@@ -1,0 +1,5 @@
+{"type":"server-started","port":65344,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65344","screen_dir":"/home/joaco/proyectos/gh/sistema/.superpowers/brainstorm/61302-1778269541/content","state_dir":"/home/joaco/proyectos/gh/sistema/.superpowers/brainstorm/61302-1778269541/state"}
+{"type":"screen-added","file":"/home/joaco/proyectos/gh/sistema/.superpowers/brainstorm/61302-1778269541/content/pos-layout.html"}
+{"type":"screen-added","file":"/home/joaco/proyectos/gh/sistema/.superpowers/brainstorm/61302-1778269541/content/libro-diario.html"}
+{"type":"screen-added","file":"/home/joaco/proyectos/gh/sistema/.superpowers/brainstorm/61302-1778269541/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

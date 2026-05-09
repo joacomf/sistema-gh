@@ -113,6 +113,7 @@ model VentaItem {
   stockId        String
   descripcion    String  @db.VarChar(255)
   cantidad       Int
+  precioCosto    Decimal @default(0) @db.Decimal(10, 2)
   precioUnitario Decimal @db.Decimal(10, 2)
   subtotal       Decimal @db.Decimal(10, 2)
 

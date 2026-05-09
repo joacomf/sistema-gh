@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup – Punto de Venta</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f0f2f7; display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 200px; min-width: 200px; background: #0f172a; color: #94a3b8;
+    display: flex; flex-direction: column; padding: 12px 0;
+  }
+  .sidebar-logo { padding: 8px 16px 16px; color: white; font-size: 14px; font-weight: 700; border-bottom: 1px solid #1e293b; margin-bottom: 8px; }
+  .sidebar-section { padding: 4px 16px 2px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-top: 8px; }
+  .sidebar-item { padding: 7px 16px; cursor: pointer; border-radius: 4px; margin: 1px 8px; font-size: 12px; }
+  .sidebar-item:hover { background: #1e293b; color: #cbd5e1; }
+  .sidebar-item.active { background: #1d4ed8; color: white; font-weight: 600; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: white; border-bottom: 1px solid #e4e7ed; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-title { font-size: 16px; font-weight: 700; color: #111827; }
+  .topbar-hint { font-size: 11px; color: #9ca3af; }
+  .content { flex: 1; display: flex; gap: 16px; padding: 16px; overflow: hidden; }
+
+  /* Search bar */
+  .left-panel { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .search-row { display: flex; gap: 8px; }
+  .search-input {
+    flex: 1; padding: 9px 12px; border: 1.5px solid #e4e7ed; border-radius: 8px;
+    font-size: 13px; background: white; color: #111827;
+    outline: none;
+  }
+  .search-input:focus { border-color: #3b82f6; }
+  .search-input::placeholder { color: #9ca3af; }
+  .btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .btn-primary { background: #1d4ed8; color: white; }
+  .btn-ghost { background: #f1f5f9; color: #475569; border: 1px solid #e4e7ed; }
+
+  /* Suggestion dropdown (visible in mockup) */
+  .suggestions {
+    background: white; border: 1px solid #e4e7ed; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 4px 0;
+  }
+  .suggestion-item { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .suggestion-item:hover { background: #f1f5f9; }
+  .suggestion-item .code { font-size: 10px; color: #9ca3af; font-family: monospace; }
+  .suggestion-item .desc { font-weight: 500; color: #111827; }
+  .suggestion-item .price { font-weight: 700; color: #1d4ed8; font-size: 12px; }
+
+  /* Cart table */
+  .cart-wrapper { flex: 1; overflow-y: auto; background: white; border-radius: 12px; border: 1px solid #e4e7ed; }
+  .cart-table { width: 100%; border-collapse: collapse; }
+  .cart-table th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: sticky; top: 0; }
+  .cart-table td { padding: 10px 12px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+  .cart-table tr:last-child td { border-bottom: none; }
+  .cart-table tr:hover td { background: #f8fafc; }
+  .qty-input { width: 52px; padding: 4px 8px; border: 1.5px solid #e4e7ed; border-radius: 6px; text-align: center; font-weight: 700; font-size: 13px; }
+  .qty-input:focus { border-color: #3b82f6; outline: none; }
+  .del-btn { background: none; border: none; color: #d1d5db; cursor: pointer; padding: 4px; border-radius: 4px; font-size: 15px; }
+  .del-btn:hover { color: #ef4444; background: #fef2f2; }
+  .cart-empty { text-align: center; padding: 48px; color: #9ca3af; }
+  .cart-empty .icon { font-size: 36px; margin-bottom: 8px; }
+  .subtotal { font-weight: 700; color: #111827; }
+  .importe { font-family: 'Courier New', monospace; }
+
+  /* Right panel */
+  .right-panel { width: 280px; display: flex; flex-direction: column; gap: 12px; }
+
+  .panel-card { background: white; border-radius: 12px; border: 1px solid #e4e7ed; padding: 14px; }
+  .panel-card h4 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; margin-bottom: 10px; }
+
+  /* Payment methods */
+  .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pay-btn {
+    padding: 10px 6px; border-radius: 8px; border: 2px solid #e4e7ed;
+    cursor: pointer; text-align: center; background: white;
+    font-size: 11px; font-weight: 600; color: #374151; transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .pay-btn .icon { font-size: 18px; }
+  .pay-btn:hover { border-color: #93c5fd; background: #eff6ff; }
+  .pay-btn.active-efe { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+  .pay-btn.active-deb { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+  .pay-btn.active-cred { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+  .pay-btn.active-mp { border-color: #8b5cf6; background: #f5f3ff; color: #6d28d9; }
+
+  /* Recargo notice */
+  .recargo-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 10px; font-size: 11px; color: #92400e; display: flex; justify-content: space-between; }
+  .recargo-notice .percent { font-weight: 700; font-size: 13px; }
+
+  /* Total */
+  .total-section { text-align: center; }
+  .total-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+  .total-amount { font-size: 34px; font-weight: 800; color: #111827; font-family: 'Courier New', monospace; line-height: 1.1; }
+  .total-recargo { font-size: 12px; color: #d97706; margin-top: 2px; }
+
+  /* Actions */
+  .action-btns { display: flex; flex-direction: column; gap: 8px; }
+  .btn-finalize { background: #16a34a; color: white; padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; font-weight: 700; width: 100%; }
+  .btn-finalize:hover { background: #15803d; }
+  .btn-print { background: #f1f5f9; color: #475569; padding: 10px; border-radius: 10px; border: 1px solid #e4e7ed; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; }
+  .btn-print:hover { background: #e2e8f0; }
+
+  /* Reorder modal overlay */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal {
+    background: white; border-radius: 16px; padding: 24px; width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  .modal h3 { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+  .modal .sub { font-size: 12px; color: #6b7280; margin-bottom: 16px; }
+  .reorder-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+  .reorder-item:last-child { border-bottom: none; }
+  .reorder-check { width: 16px; height: 16px; accent-color: #1d4ed8; }
+  .reorder-desc { flex: 1; font-size: 12px; color: #374151; }
+  .reorder-qty { width: 54px; padding: 4px 8px; border: 1.5px solid #e4e7ed; border-radius: 6px; text-align: center; font-size: 12px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-modal-ok { flex: 1; background: #1d4ed8; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+  .btn-modal-skip { padding: 10px 14px; background: #f1f5f9; color: #475569; border: 1px solid #e4e7ed; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; }
+
+  /* Tag */
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-amber { background: #fef9c3; color: #92400e; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">⚙ GH Sistema</div>
+  <div class="sidebar-section">Ventas</div>
+  <div class="sidebar-item active">Punto de Venta</div>
+  <div class="sidebar-item">Libro Diario</div>
+  <div class="sidebar-section">Stock</div>
+  <div class="sidebar-item">Stock</div>
+  <div class="sidebar-item">Recepción</div>
+  <div class="sidebar-section">Compras</div>
+  <div class="sidebar-item">Pedidos</div>
+  <div class="sidebar-item">Facturas</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">Punto de Venta</span>
+    <span class="topbar-hint">Buscá un artículo para comenzar · <strong>F2</strong> para acceso rápido</span>
+  </div>
+
+  <div class="content">
+    <!-- LEFT: search + cart -->
+    <div class="left-panel">
+
+      <!-- Search row -->
+      <div class="search-row">
+        <input class="search-input" type="text" value="tuerca" placeholder="Buscar artículo por código o descripción…" />
+        <button class="btn btn-ghost">🔍</button>
+      </div>
+
+      <!-- Suggestions dropdown (shown open for mockup) -->
+      <div class="suggestions">
+        <div class="suggestion-item" style="background:#eff6ff">
+          <div>
+            <div class="code">TRC-M8</div>
+            <div class="desc">Tuerca M8 galvanizada</div>
+          </div>
+          <div class="price">$120,00</div>
+        </div>
+        <div class="suggestion-item">
+          <div>
+            <div class="code">TRC-M10</div>
+            <div class="desc">Tuerca M10 galvanizada</div>
+          </div>
+          <div class="price">$185,00</div>
+        </div>
+        <div class="suggestion-item">
+          <div>
+            <div class="code">TRC-HX</div>
+            <div class="desc">Tuerca hexagonal zinc</div>
+          </div>
+          <div class="price">$145,00</div>
+        </div>
+      </div>
+
+      <!-- Cart table -->
+      <div class="cart-wrapper">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th style="text-align:center">Cant.</th>
+              <th style="text-align:right">P. Venta</th>
+              <th style="text-align:right">Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green importe">TRC-M8</span></td>
+              <td>Tuerca M8 galvanizada</td>
+              <td style="text-align:center"><input class="qty-input" type="number" value="4" /></td>
+              <td style="text-align:right" class="importe">$120,00</td>
+              <td style="text-align:right" class="subtotal importe">$480,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber importe">PRN-A4</span></td>
+              <td>Perno allen 4mm × 20</td>
+              <td style="text-align:center"><input class="qty-input" type="number" value="10" /></td>
+              <td style="text-align:right" class="importe">$85,00</td>
+              <td style="text-align:right" class="subtotal importe">$850,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green importe">AVD-316</span></td>
+              <td>Arandela plana 3/16"</td>
+              <td style="text-align:center"><input class="qty-input" type="number" value="6" /></td>
+              <td style="text-align:right" class="importe">$45,00</td>
+              <td style="text-align:right" class="subtotal importe">$270,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: payment + total -->
+    <div class="right-panel">
+
+      <div class="panel-card">
+        <h4>Método de Pago</h4>
+        <div class="payment-grid">
+          <div class="pay-btn active-efe">
+            <span class="icon">💵</span>
+            Efectivo
+          </div>
+          <div class="pay-btn active-deb" style="border-color:#e4e7ed;background:white;color:#374151;">
+            <span class="icon">💳</span>
+            Débito
+          </div>
+          <div class="pay-btn" style="">
+            <span class="icon">🪙</span>
+            Crédito
+          </div>
+          <div class="pay-btn">
+            <span class="icon">📱</span>
+            Mercado Pago
+          </div>
+        </div>
+      </div>
+
+      <!-- Recargo (hidden unless crédito selected) -->
+      <!-- <div class="recargo-notice">
+        <span>Recargo tarjeta crédito</span>
+        <span class="percent">+10%</span>
+      </div> -->
+
+      <div class="panel-card total-section">
+        <div class="total-label">Total a cobrar</div>
+        <div class="total-amount">$1.600,00</div>
+        <!-- <div class="total-recargo">inc. recargo +$160,00</div> -->
+      </div>
+
+      <div class="action-btns">
+        <button class="btn-print">🖨 Imprimir ticket</button>
+        <button class="btn-finalize">✔ Finalizar venta</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Reposición (se muestra después de finalizar) -->
+<div class="modal-overlay">
+  <div class="modal">
+    <h3>¿Reponer artículos?</h3>
+    <div class="sub">Seleccioná los artículos vendidos que querés agregar al pedido</div>
+
+    <div class="reorder-item">
+      <input type="checkbox" class="reorder-check" checked>
+      <div class="reorder-desc">Tuerca M8 galvanizada</div>
+      <input class="reorder-qty" type="number" value="10">
+    </div>
+    <div class="reorder-item">
+      <input type="checkbox" class="reorder-check" checked>
+      <div class="reorder-desc">Perno allen 4mm × 20</div>
+      <input class="reorder-qty" type="number" value="10">
+    </div>
+    <div class="reorder-item">
+      <input type="checkbox" class="reorder-check">
+      <div class="reorder-desc">Arandela plana 3/16"</div>
+      <input class="reorder-qty" type="number" value="10">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-skip">Omitir</button>
+      <button class="btn-modal-ok">Agregar al pedido →</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

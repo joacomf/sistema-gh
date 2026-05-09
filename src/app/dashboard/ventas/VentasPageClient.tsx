@@ -13,8 +13,8 @@ type StockResult = {
   id: string
   codigo: string
   descripcion: string
+  precioCosto: number
   precioVenta: number
-  cantidadSugerida: number
   proveedor: { nombre: string }
 }
 
@@ -31,7 +31,6 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [reposicionItems, setReposicionItems] = useState<ReposicionItem[] | null>(null)
   const [reposicionLoading, setReposicionLoading] = useState(false)
-  const [pedidosError, setPedidosError] = useState<string | null>(null)
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -70,6 +69,7 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
         codigo: stock.codigo,
         descripcion: stock.descripcion,
         cantidad: 1,
+        precioCosto: stock.precioCosto,
         precioUnitario: stock.precioVenta,
         subtotal: stock.precioVenta,
       }]
@@ -83,6 +83,14 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
     setCarrito(prev => prev.map(i =>
       i.stockId === stockId
         ? { ...i, cantidad, subtotal: cantidad * i.precioUnitario }
+        : i
+    ))
+  }
+
+  const updatePrecio = (stockId: string, precio: number) => {
+    setCarrito(prev => prev.map(i =>
+      i.stockId === stockId
+        ? { ...i, precioUnitario: precio, subtotal: i.cantidad * precio }
         : i
     ))
   }
@@ -103,12 +111,7 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
     setCheckoutError(null)
     setLoading(true)
     try {
-      const result = await checkoutAction({
-        carrito,
-        metodoPago,
-        facturada,
-        recargo,
-      })
+      const result = await checkoutAction({ carrito, metodoPago, facturada, recargo })
       if (result.success && result.data) {
         setReposicionItems(result.data.reposicion)
         setCarrito([])
@@ -186,32 +189,40 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
         )}
       </div>
 
-      <div className="grid grid-cols-[1fr_300px] gap-6 items-start">
-        {/* Panel izquierdo — carrito */}
+      <div className="grid grid-cols-[1fr_280px] gap-6 items-start">
         <div className="rounded-2xl border-[1.5px] border-slate-200 bg-white shadow-sm p-6 min-h-64">
-          <Carrito items={carrito} onUpdateCantidad={updateCantidad} onRemove={removeItem} />
+          <Carrito
+            items={carrito}
+            onUpdateCantidad={updateCantidad}
+            onUpdatePrecio={updatePrecio}
+            onRemove={removeItem}
+          />
         </div>
 
-        {/* Panel derecho — pago y total */}
-        <div className="sticky top-6 rounded-2xl border-[1.5px] border-slate-200 bg-white shadow-sm p-6 space-y-5">
+        <div className="sticky top-6 rounded-2xl border-[1.5px] border-slate-200 bg-white shadow-sm p-5 space-y-4">
           <SelectorMetodoPago value={metodoPago} onChange={setMetodoPago} recargo={recargo} />
 
-          {/* Total */}
-          <div className="rounded-xl bg-slate-50 px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+          <div className="rounded-xl bg-slate-50 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2 text-center">
               Total a cobrar
             </p>
-            <p className="text-4xl font-black text-slate-900 font-mono">
+            <p className="text-2xl font-black text-slate-900 font-mono text-center leading-tight break-all">
               <Importe value={total} />
             </p>
-            {metodoPago === 'CREDITO' && (
-              <p className="text-xs text-amber-600 mt-1">
-                inc. recargo +<Importe value={total - baseTotal} />
-              </p>
+            {metodoPago === 'CREDITO' && baseTotal > 0 && (
+              <div className="mt-2 pt-2 border-t border-slate-200 space-y-0.5 text-xs text-slate-500">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span><Importe value={baseTotal} /></span>
+                </div>
+                <div className="flex justify-between text-amber-600 font-medium">
+                  <span>Recargo {recargo}%</span>
+                  <span>+<Importe value={total - baseTotal} /></span>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Facturada */}
           <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
             <input
               type="checkbox"
@@ -222,25 +233,23 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
             Marcar como facturada
           </label>
 
-          {/* Acciones */}
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <button
               type="button"
               onClick={handleFinalize}
               disabled={loading || carrito.length === 0}
-              className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-emerald-500 px-4 py-4 text-base font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:bg-emerald-600 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:bg-emerald-600 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
             >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
               {loading ? 'Registrando...' : 'Finalizar venta'}
             </button>
             {checkoutError && (
-              <p className="text-sm text-red-600 text-center">{checkoutError}</p>
+              <p className="text-xs text-red-600 text-center">{checkoutError}</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Modal de reposición post-checkout */}
       {reposicionItems && (
         <ModalReposicion
           items={reposicionItems}

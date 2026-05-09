@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup – Libro Diario</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f0f2f7; display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 200px; min-width: 200px; background: #0f172a; color: #94a3b8;
+    display: flex; flex-direction: column; padding: 12px 0;
+  }
+  .sidebar-logo { padding: 8px 16px 16px; color: white; font-size: 14px; font-weight: 700; border-bottom: 1px solid #1e293b; margin-bottom: 8px; }
+  .sidebar-section { padding: 4px 16px 2px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-top: 8px; }
+  .sidebar-item { padding: 7px 16px; cursor: pointer; border-radius: 4px; margin: 1px 8px; font-size: 12px; }
+  .sidebar-item:hover { background: #1e293b; color: #cbd5e1; }
+  .sidebar-item.active { background: #1d4ed8; color: white; font-weight: 600; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    background: white; border-bottom: 1px solid #e4e7ed;
+    padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-size: 16px; font-weight: 700; color: #111827; }
+  .date-input {
+    padding: 6px 10px; border: 1.5px solid #e4e7ed; border-radius: 8px;
+    font-size: 13px; color: #374151; background: white;
+  }
+  .btn-print { background: #f1f5f9; color: #475569; padding: 7px 12px; border-radius: 8px; border: 1px solid #e4e7ed; cursor: pointer; font-size: 12px; font-weight: 600; }
+
+  /* Summary cards */
+  .summary-row { display: flex; gap: 12px; padding: 16px 20px 0; }
+  .sum-card {
+    flex: 1; background: white; border-radius: 12px; border: 1px solid #e4e7ed;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .sum-card .label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+  .sum-card .amount { font-size: 20px; font-weight: 800; font-family: 'Courier New', monospace; }
+  .sum-card .sub { font-size: 10px; }
+
+  .card-efe .label { color: #15803d; }
+  .card-efe .amount { color: #15803d; }
+  .card-efe .sub { color: #86efac; }
+
+  .card-deb .label { color: #1d4ed8; }
+  .card-deb .amount { color: #1d4ed8; }
+
+  .card-mp .label { color: #7c3aed; }
+  .card-mp .amount { color: #7c3aed; }
+
+  .card-cred .label { color: #d97706; }
+  .card-cred .amount { color: #d97706; }
+
+  .card-neto { background: #0f172a; border-color: #0f172a; }
+  .card-neto .label { color: #94a3b8; }
+  .card-neto .amount { color: white; }
+  .card-neto .sub { color: #475569; }
+
+  /* Tables area */
+  .tables-area { flex: 1; display: flex; gap: 16px; padding: 16px 20px; overflow: hidden; }
+
+  .table-col { display: flex; flex-direction: column; overflow: hidden; }
+  .table-col.ventas { flex: 2; }
+  .table-col.gastos { flex: 1; }
+
+  .col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .col-title { font-size: 13px; font-weight: 700; color: #111827; }
+  .col-count { font-size: 11px; color: #9ca3af; }
+
+  .table-wrapper { flex: 1; overflow-y: auto; background: white; border-radius: 12px; border: 1px solid #e4e7ed; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: sticky; top: 0; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable:hover td { background: #f0f9ff; cursor: pointer; }
+  .importe { font-family: 'Courier New', monospace; font-weight: 700; }
+
+  /* Payment badges */
+  .pay-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .pay-efe { background: #dcfce7; color: #15803d; }
+  .pay-deb { background: #dbeafe; color: #1d4ed8; }
+  .pay-cred { background: #fef3c7; color: #92400e; }
+  .pay-mp { background: #ede9fe; color: #6d28d9; }
+
+  .hora { font-size: 11px; color: #9ca3af; font-family: monospace; }
+  .desc-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .badge-f { display: inline-block; background: #1d4ed8; color: white; border-radius: 3px; padding: 1px 5px; font-size: 9px; font-weight: 700; margin-left: 4px; }
+
+  .del-btn { background: none; border: none; color: #e5e7eb; cursor: pointer; font-size: 13px; padding: 3px 6px; border-radius: 4px; }
+  .del-btn:hover { color: #ef4444; background: #fef2f2; }
+
+  /* Gasto amount */
+  .gasto-amount { color: #dc2626; font-family: 'Courier New', monospace; font-weight: 700; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal {
+    background: white; border-radius: 16px; width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden;
+  }
+  .modal-header { padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; }
+  .modal-header h3 { font-size: 15px; font-weight: 700; color: #111827; }
+  .modal-header .meta { font-size: 11px; color: #6b7280; margin-top: 3px; display: flex; gap: 12px; }
+  .modal-close { background: none; border: none; font-size: 18px; color: #9ca3af; cursor: pointer; }
+  .modal-body { padding: 0 20px 20px; max-height: 340px; overflow-y: auto; }
+  .modal-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .modal-table th { padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; color: #6b7280; border-bottom: 2px solid #f1f5f9; }
+  .modal-table td { padding: 9px 10px; border-bottom: 1px solid #f8fafc; font-size: 12px; }
+  .modal-table tfoot td { font-weight: 700; border-top: 2px solid #e4e7ed; padding-top: 10px; font-size: 14px; }
+  .modal-id { font-size: 10px; color: #9ca3af; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">⚙ GH Sistema</div>
+  <div class="sidebar-section">Ventas</div>
+  <div class="sidebar-item">Punto de Venta</div>
+  <div class="sidebar-item active">Libro Diario</div>
+  <div class="sidebar-section">Stock</div>
+  <div class="sidebar-item">Stock</div>
+  <div class="sidebar-item">Recepción</div>
+  <div class="sidebar-section">Compras</div>
+  <div class="sidebar-item">Pedidos</div>
+  <div class="sidebar-item">Facturas</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Libro Diario</span>
+      <input class="date-input" type="date" value="2026-05-08" />
+    </div>
+    <button class="btn-print">🖨 Imprimir cierre</button>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-row">
+    <div class="sum-card card-efe">
+      <span class="label">💵 Efectivo</span>
+      <span class="amount">$12.480,00</span>
+      <span class="sub">4 ventas</span>
+    </div>
+    <div class="sum-card card-deb">
+      <span class="label">💳 Débito</span>
+      <span class="amount">$3.200,00</span>
+      <span class="sub">2 ventas</span>
+    </div>
+    <div class="sum-card card-cred">
+      <span class="label">🪙 Crédito</span>
+      <span class="amount">$5.500,00</span>
+      <span class="sub">1 venta · inc. recargo</span>
+    </div>
+    <div class="sum-card card-mp">
+      <span class="label">📱 Mercado Pago</span>
+      <span class="amount">$1.850,00</span>
+      <span class="sub">1 venta</span>
+    </div>
+    <div class="sum-card card-neto">
+      <span class="label">Caja neta</span>
+      <span class="amount">$22.230,00</span>
+      <span class="sub">ventas − egresos</span>
+    </div>
+  </div>
+
+  <!-- Tables -->
+  <div class="tables-area">
+
+    <!-- VENTAS -->
+    <div class="table-col ventas">
+      <div class="col-header">
+        <span class="col-title">Ventas del día</span>
+        <span class="col-count">8 ventas</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Productos</th>
+              <th>Pago</th>
+              <th style="text-align:right">Importe</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="clickable">
+              <td class="hora">09:12</td>
+              <td class="desc-cell">Tuerca M8, Perno allen… (3 art.)</td>
+              <td><span class="pay-badge pay-efe">💵 Efectivo</span></td>
+              <td style="text-align:right" class="importe">$1.600,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr class="clickable">
+              <td class="hora">10:05</td>
+              <td class="desc-cell">Tornillo cabeza plana inox <span class="badge-f">F</span></td>
+              <td><span class="pay-badge pay-cred">🪙 Crédito</span></td>
+              <td style="text-align:right" class="importe">$5.500,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr class="clickable" style="background:#f0f9ff">
+              <td class="hora">10:48</td>
+              <td class="desc-cell">Arandela, Bulón hexagonal… (2 art.)</td>
+              <td><span class="pay-badge pay-deb">💳 Débito</span></td>
+              <td style="text-align:right" class="importe">$1.750,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr class="clickable">
+              <td class="hora">11:30</td>
+              <td class="desc-cell">Remache pop 3/16" (pack 50)</td>
+              <td><span class="pay-badge pay-efe">💵 Efectivo</span></td>
+              <td style="text-align:right" class="importe">$2.400,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr class="clickable">
+              <td class="hora">13:15</td>
+              <td class="desc-cell">Cinta vulcanizante, Llave inglesa</td>
+              <td><span class="pay-badge pay-mp">📱 M.Pago</span></td>
+              <td style="text-align:right" class="importe">$1.850,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr class="clickable">
+              <td class="hora">14:02</td>
+              <td class="desc-cell">Perno rosca fina M12 × 40</td>
+              <td><span class="pay-badge pay-efe">💵 Efectivo</span></td>
+              <td style="text-align:right" class="importe">$3.680,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="table-col gastos">
+      <div class="col-header">
+        <span class="col-title">Egresos del día</span>
+        <span class="col-count">2 egresos · $1.800,00</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th style="text-align:right">Importe</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Flete proveedor</td>
+              <td style="text-align:right" class="gasto-amount">$1.200,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+            <tr>
+              <td>Gastos limpieza</td>
+              <td style="text-align:right" class="gasto-amount">$600,00</td>
+              <td><button class="del-btn">✕</button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style="padding: 10px 12px; font-size:11px; color:#6b7280">
+                <button style="background:#f1f5f9;border:1px solid #e4e7ed;padding:6px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;color:#374151">+ Agregar egreso</button>
+              </td>
+              <td></td><td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Detalle de venta (click en fila) -->
+<div class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3>Arandela, Bulón hexagonal… (2 art.)</h3>
+        <div class="meta">
+          <span>🕙 10:48 hs</span>
+          <span><span class="pay-badge pay-deb">💳 Débito</span></span>
+          <span class="modal-id">#000003</span>
+        </div>
+      </div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="modal-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th style="text-align:center">Cant.</th>
+            <th style="text-align:right">P. Unit.</th>
+            <th style="text-align:right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:monospace;font-size:11px;color:#6b7280">AVD-316</td>
+            <td>Arandela plana 3/16"</td>
+            <td style="text-align:center">6</td>
+            <td style="text-align:right" class="importe">$45,00</td>
+            <td style="text-align:right" class="importe">$270,00</td>
+          </tr>
+          <tr>
+            <td style="font-family:monospace;font-size:11px;color:#6b7280">BLN-HX</td>
+            <td>Bulón hexagonal M8 × 30</td>
+            <td style="text-align:center">5</td>
+            <td style="text-align:right" class="importe">$296,00</td>
+            <td style="text-align:right" class="importe">$1.480,00</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="text-align:right;color:#374151">Total</td>
+            <td style="text-align:right" class="importe">$1.750,00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
