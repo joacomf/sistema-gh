@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import {usePathname} from "next/navigation"
-import {ChevronDown, Home, Package, Settings} from "lucide-react"
+import {ChevronDown, Home, Package, Settings, ShoppingCart} from "lucide-react"
 import * as Accordion from "@radix-ui/react-accordion"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
@@ -20,6 +20,14 @@ const menu = [
       { name: "Recepción", href: "/dashboard/recepcion" },
     ]
   },
+  {
+    name: "Ventas",
+    icon: ShoppingCart,
+    subItems: [
+      { name: "Punto de Venta", href: "/dashboard/ventas" },
+      { name: "Libro Diario", href: "/dashboard/libro-diario" },
+    ]
+  },
   { name: "Configuración", icon: Settings, href: "/dashboard/configuracion" },
 ]
 
@@ -35,7 +43,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <Accordion.Root type="multiple" defaultValue={["Gestión"]} className="w-full space-y-0.5">
+        <Accordion.Root type="multiple" defaultValue={["Gestión", "Ventas"]} className="w-full space-y-0.5">
           {menu.map((item) => {
             const isActive = pathname === item.href || item.subItems?.some(s => pathname.startsWith(s.href))
             const Icon = item.icon
