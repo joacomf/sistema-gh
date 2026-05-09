@@ -1,9 +1,8 @@
-// src/modules/ventas/actions.ts
 "use server"
 
 import { VentaRepository, VentaWithItems } from '@/repositories/venta.repository'
 import { GastoRepository } from '@/repositories/gasto.repository'
-import { StockRepository } from '@/repositories/stock.repository'
+import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
@@ -58,36 +57,48 @@ export async function checkoutAction(data: {
       ? total * (1 + data.recargo / 100)
       : total
 
-    const venta = await VentaRepository.create({
-      descripcion: buildDescripcion(data.carrito),
-      importe,
-      metodoPago: data.metodoPago,
-      facturada: data.facturada,
-      items: data.carrito,
-    })
-
-    // Descontar stock
-    for (const item of data.carrito) {
-      await prisma.stock.update({
-        where: { id: item.stockId },
-        data: { cantidad: { decrement: item.cantidad } },
+    const { venta } = await prisma.$transaction(async (tx) => {
+      const venta = await tx.venta.create({
+        data: {
+          descripcion: buildDescripcion(data.carrito),
+          importe: new Prisma.Decimal(importe),
+          metodoPago: data.metodoPago as 'EFECTIVO' | 'DEBITO' | 'CREDITO' | 'MERCADO_PAGO',
+          facturada: data.facturada,
+          items: {
+            create: data.carrito.map(i => ({
+              stockId: i.stockId,
+              descripcion: i.descripcion,
+              cantidad: i.cantidad,
+              precioUnitario: new Prisma.Decimal(i.precioUnitario),
+              subtotal: new Prisma.Decimal(i.subtotal),
+            })),
+          },
+        },
+        include: { items: { include: { stock: true } } },
       })
-    }
+      for (const item of data.carrito) {
+        await tx.stock.update({
+          where: { id: item.stockId },
+          data: { cantidad: { decrement: item.cantidad } },
+        })
+      }
+      return { venta }
+    })
 
     revalidatePath('/dashboard/ventas')
     revalidatePath('/dashboard/stock')
 
-    // Preparar items de reposición con cantidadSugerida
-    const reposicion: ReposicionItem[] = await Promise.all(
-      data.carrito.map(async item => {
-        const stock = await StockRepository.findById(item.stockId)
-        return {
-          stockId: item.stockId,
-          descripcion: item.descripcion,
-          cantidadSugerida: stock?.cantidadSugerida ?? 10,
-        }
-      })
-    )
+    const stockIds = data.carrito.map(i => i.stockId)
+    const stocks = await prisma.stock.findMany({
+      where: { id: { in: stockIds } },
+      select: { id: true, cantidadSugerida: true },
+    })
+    const stockMap = new Map(stocks.map(s => [s.id, s]))
+    const reposicion: ReposicionItem[] = data.carrito.map(item => ({
+      stockId: item.stockId,
+      descripcion: item.descripcion,
+      cantidadSugerida: stockMap.get(item.stockId)?.cantidadSugerida ?? 10,
+    }))
 
     return { success: true, data: { ventaId: venta.id, reposicion } }
   } catch (error) {

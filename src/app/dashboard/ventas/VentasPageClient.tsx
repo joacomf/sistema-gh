@@ -1,4 +1,3 @@
-// src/app/dashboard/ventas/VentasPageClient.tsx
 "use client"
 
 import { useState, useRef, useCallback } from 'react'
@@ -29,8 +28,10 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
   const [suggestions, setSuggestions] = useState<StockResult[]>([])
   const [searching, setSearching] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [reposicionItems, setReposicionItems] = useState<ReposicionItem[] | null>(null)
   const [reposicionLoading, setReposicionLoading] = useState(false)
+  const [pedidosError, setPedidosError] = useState<string | null>(null)
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -99,6 +100,7 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
 
   const handleFinalize = async () => {
     if (carrito.length === 0) return
+    setCheckoutError(null)
     setLoading(true)
     try {
       const result = await checkoutAction({
@@ -113,7 +115,7 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
         setFacturada(false)
         setMetodoPago('EFECTIVO')
       } else {
-        alert(result.error ?? 'Error al registrar la venta')
+        setCheckoutError(result.error ?? 'Error al registrar la venta')
       }
     } finally {
       setLoading(false)
@@ -123,10 +125,15 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
   const handleReposicionConfirm = async (pedidos: { stockId: string; cantidad: number }[]) => {
     setReposicionLoading(true)
     try {
-      await crearPedidosAction(pedidos)
+      const result = await crearPedidosAction(pedidos)
+      if (result.success) {
+        setReposicionItems(null)
+      } else {
+        console.error('Error al crear pedidos:', result.error)
+        setReposicionItems(null)
+      }
     } finally {
       setReposicionLoading(false)
-      setReposicionItems(null)
     }
   }
 
@@ -137,7 +144,6 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
         <p className="mt-1 text-slate-500">Buscá artículos para agregar a la venta.</p>
       </div>
 
-      {/* Buscador — mismo estilo que Recepción */}
       <div className="relative mb-4">
         <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl px-4 py-3.5 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] transition-all shadow-sm">
           <Search size={20} className="text-slate-400 shrink-0" />
@@ -227,6 +233,9 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
               {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
               {loading ? 'Registrando...' : 'Finalizar venta'}
             </button>
+            {checkoutError && (
+              <p className="text-sm text-red-600 text-center">{checkoutError}</p>
+            )}
           </div>
         </div>
       </div>
