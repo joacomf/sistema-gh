@@ -28,33 +28,6 @@ export const VentaRepository = {
     })
   },
 
-  async create(data: {
-    descripcion: string
-    importe: number
-    metodoPago: string
-    facturada: boolean
-    items: { stockId: string; descripcion: string; cantidad: number; precioUnitario: number; subtotal: number }[]
-  }): Promise<VentaWithItems> {
-    return prisma.venta.create({
-      data: {
-        descripcion: data.descripcion,
-        importe: new Prisma.Decimal(data.importe),
-        metodoPago: data.metodoPago as 'EFECTIVO' | 'DEBITO' | 'CREDITO' | 'MERCADO_PAGO',
-        facturada: data.facturada,
-        items: {
-          create: data.items.map(i => ({
-            stockId: i.stockId,
-            descripcion: i.descripcion,
-            cantidad: i.cantidad,
-            precioUnitario: new Prisma.Decimal(i.precioUnitario),
-            subtotal: new Prisma.Decimal(i.subtotal),
-          })),
-        },
-      },
-      include: { items: { include: { stock: true } } },
-    })
-  },
-
   async deleteById(id: string): Promise<void> {
     await prisma.venta.delete({ where: { id } })
   },

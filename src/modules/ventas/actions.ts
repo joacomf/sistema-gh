@@ -1,6 +1,6 @@
 "use server"
 
-import { VentaRepository, VentaWithItems } from '@/repositories/venta.repository'
+import { VentaRepository } from '@/repositories/venta.repository'
 import { GastoRepository } from '@/repositories/gasto.repository'
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
@@ -27,23 +27,6 @@ function buildDescripcion(items: CarritoItem[]): string {
   return `${first3}${suffix} (${items.length} art.)`
 }
 
-function serializeVenta(venta: VentaWithItems) {
-  return {
-    ...venta,
-    importe: venta.importe.toNumber(),
-    items: venta.items.map(item => ({
-      ...item,
-      precioUnitario: item.precioUnitario.toNumber(),
-      subtotal: item.subtotal.toNumber(),
-      stock: {
-        ...item.stock,
-        precioCosto: item.stock.precioCosto.toNumber(),
-        precioLista: item.stock.precioLista.toNumber(),
-        precioVenta: item.stock.precioVenta.toNumber(),
-      },
-    })),
-  }
-}
 
 export async function checkoutAction(data: {
   carrito: CarritoItem[]
@@ -77,6 +60,10 @@ export async function checkoutAction(data: {
         include: { items: { include: { stock: true } } },
       })
       for (const item of data.carrito) {
+        const stock = await tx.stock.findUnique({ where: { id: item.stockId }, select: { cantidad: true } })
+        if (!stock || stock.cantidad < item.cantidad) {
+          throw new Error(`Stock insuficiente para "${item.descripcion}"`)
+        }
         await tx.stock.update({
           where: { id: item.stockId },
           data: { cantidad: { decrement: item.cantidad } },
@@ -162,18 +149,3 @@ export async function eliminarGastoAction(
   }
 }
 
-export async function getVentaItemsAction(
-  ventaId: string
-): Promise<{ success: boolean; data?: ReturnType<typeof serializeVenta>; error?: string }> {
-  try {
-    const venta = await prisma.venta.findUnique({
-      where: { id: ventaId },
-      include: { items: { include: { stock: true } } },
-    })
-    if (!venta) return { success: false, error: 'Venta no encontrada' }
-    return { success: true, data: serializeVenta(venta) }
-  } catch (error) {
-    console.error('Error al obtener items:', error)
-    return { success: false, error: 'No se pudieron cargar los detalles' }
-  }
-}
