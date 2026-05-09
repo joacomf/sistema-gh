@@ -103,22 +103,46 @@ export class DashboardPage {
 
   async createStock(provName: string, codigo: string, desc: string, precioLista: string) {
     await this.page.getByRole('button', { name: 'Nueva Pieza' }).click();
-    
+
     // Select provider
     await this.page.getByLabel('Proveedor').selectOption({ label: provName });
-    
+
     await this.page.getByLabel('Código interno').fill(codigo);
     await this.page.getByLabel('Descripción').fill(desc);
     await this.page.getByLabel('Cantidad Actual').fill('10');
     await this.page.getByLabel('Precio Lista').fill(precioLista);
     await this.page.getByLabel('Precio Venta').fill('1500'); // Fijo para el test
-    
+
     await this.page.getByRole('button', { name: 'Guardar Pieza' }).click();
-    
+
     // Validar que se cerró el modal
     await expect(this.page.getByRole('dialog')).not.toBeVisible();
-    
+
     // Validar que aparece en la lista
     await expect(this.page.getByRole('cell', { name: codigo })).toBeVisible();
+  }
+
+  async goToVentas() {
+    await this.page.getByText('Ventas').click();
+    await this.page.getByRole('link', { name: 'Punto de Venta' }).click();
+    await expect(this.page.getByRole('heading', { name: 'Punto de Venta' })).toBeVisible();
+  }
+
+  async goToLibroDiario() {
+    await this.page.getByText('Ventas').click();
+    await this.page.getByRole('link', { name: 'Libro Diario' }).click();
+    await expect(this.page.getByRole('heading', { name: 'Libro Diario' })).toBeVisible();
+  }
+
+  async registrarVenta(stockCodigo: string, metodoPago: 'Efectivo' | 'Débito' | 'Crédito' | 'Mercado Pago' = 'Efectivo') {
+    await this.page.fill('input[placeholder*="código"]', stockCodigo);
+    await this.page.waitForSelector(`button:has-text("${stockCodigo}")`, { timeout: 5000 });
+    await this.page.click(`button:has-text("${stockCodigo}")`);
+    await expect(this.page.locator('td', { hasText: stockCodigo })).toBeVisible();
+
+    await this.page.getByText(metodoPago, { exact: true }).click();
+    await this.page.getByRole('button', { name: /finalizar venta/i }).click();
+    // Wait for reposition modal
+    await expect(this.page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
   }
 }
