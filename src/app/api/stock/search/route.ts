@@ -13,8 +13,19 @@ export async function GET(request: NextRequest) {
   const codigo = searchParams.get("codigo") || undefined
 
   try {
-    const results = await StockRepository.search({ proveedorId, codigo })
-    const serialized = results.map(r => ({
+    const results = await StockRepository.findAll()
+    const filtered = codigo
+      ? results.filter(r =>
+          r.codigo.includes(codigo) ||
+          (r.codigoOriginal && r.codigoOriginal.includes(codigo)) ||
+          r.descripcion.includes(codigo)
+        )
+      : results
+    const final = proveedorId
+      ? filtered.filter(r => r.proveedorId === proveedorId)
+      : filtered
+
+    const serialized = final.map(r => ({
       ...r,
       precioCosto: r.precioCosto.toNumber(),
       precioLista: r.precioLista.toNumber(),

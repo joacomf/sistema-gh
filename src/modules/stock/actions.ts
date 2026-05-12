@@ -12,10 +12,23 @@ function serializeStock(stock: StockWithProveedor) {
   }
 }
 
-export async function getStockAction() {
+export async function getStockAction(params: {
+  page?: number
+  proveedorId?: string
+  codigo?: string
+} = {}) {
   try {
-    const data = await StockRepository.findAll()
-    return data.map(serializeStock)
+    const { data, total } = await StockRepository.search({
+      page: params.page ?? 1,
+      proveedorId: params.proveedorId || undefined,
+      codigo: params.codigo || undefined,
+    })
+    const pageSize = 20
+    return {
+      data: data.map(serializeStock),
+      total,
+      pages: Math.max(1, Math.ceil(total / pageSize)),
+    }
   } catch (error) {
     console.error("Error al obtener stock:", error)
     throw new Error("No se pudo cargar el stock")

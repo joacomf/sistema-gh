@@ -78,27 +78,44 @@ export const StockRepository = {
     })
   },
 
-  async search(params: { proveedorId?: string; codigo?: string }): Promise<StockWithProveedor[]> {
-    const conditions: Prisma.StockWhereInput[] = []
+  async search(params: {
+    proveedorId?: string
+    codigo?: string
+    page?: number
+    pageSize?: number
+  }): Promise<{ data: StockWithProveedor[]; total: number }> {
+    const pageSize = params.pageSize ?? 20
+    const page = params.page ?? 1
+    const skip = (page - 1) * pageSize
 
+    const conditions: Prisma.StockWhereInput[] = []
     if (params.proveedorId) {
       conditions.push({ proveedorId: params.proveedorId })
     }
-
     if (params.codigo) {
       conditions.push({
         OR: [
           { codigo: { contains: params.codigo } },
           { codigoOriginal: { contains: params.codigo } },
           { descripcion: { contains: params.codigo } },
-        ]
+        ],
       })
     }
 
-    return prisma.stock.findMany({
-      where: conditions.length > 0 ? { AND: conditions } : undefined,
-      include: { proveedor: true },
-      orderBy: { createdAt: "desc" }
-    })
+    const where: Prisma.StockWhereInput =
+      conditions.length > 0 ? { AND: conditions } : {}
+
+    const [data, total] = await Promise.all([
+      prisma.stock.findMany({
+        where,
+        include: { proveedor: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.stock.count({ where }),
+    ])
+
+    return { data, total }
   }
 }
