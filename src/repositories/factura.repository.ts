@@ -22,6 +22,39 @@ export const FacturaRepository = {
     })
   },
 
+  async findPaginated(params: {
+    proveedorId?: string
+    numero?: string
+    page: number
+    pageSize?: number
+  }): Promise<{ data: FacturaWithItems[]; total: number }> {
+    const pageSize = params.pageSize ?? 20
+    const skip = (params.page - 1) * pageSize
+
+    const where: Prisma.FacturaWhereInput = {}
+    if (params.proveedorId) where.proveedorId = params.proveedorId
+    if (params.numero) where.numero = { contains: params.numero }
+
+    const [data, total] = await Promise.all([
+      prisma.factura.findMany({
+        where,
+        include: {
+          proveedor: true,
+          items: {
+            include: { stock: { include: { proveedor: true } } },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.factura.count({ where }),
+    ])
+
+    return { data, total }
+  },
+
   async create(data: {
     proveedorId: string
     numero: string

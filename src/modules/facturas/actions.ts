@@ -23,10 +23,23 @@ function serializeFactura(factura: FacturaWithItems) {
   }
 }
 
-export async function getFacturasAction() {
+export async function getFacturasAction(params: {
+  page?: number
+  proveedorId?: string
+  numero?: string
+} = {}) {
   try {
-    const data = await FacturaRepository.findAll()
-    return data.map(serializeFactura)
+    const { data, total } = await FacturaRepository.findPaginated({
+      page: params.page ?? 1,
+      proveedorId: params.proveedorId || undefined,
+      numero: params.numero || undefined,
+    })
+    const pageSize = 20
+    return {
+      data: data.map(serializeFactura),
+      total,
+      pages: Math.max(1, Math.ceil(total / pageSize)),
+    }
   } catch (error) {
     console.error("Error al obtener facturas:", error)
     throw new Error("No se pudieron cargar las facturas")
