@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createStockAction, updateStockAction } from "../actions"
 import ImporteInput from "@/components/ui/ImporteInput"
+import { ErrorBanner } from "@/components/ui/ErrorBanner"
 
 const inputCls = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
 
@@ -30,6 +31,7 @@ export default function StockForm({
     fechaRecibido: stock?.fechaRecibido ? new Date(stock.fechaRecibido).toISOString().split("T")[0] : "",
   })
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     if (formData.precioLista > 0 && formData.proveedorId) {
@@ -56,6 +58,7 @@ export default function StockForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setSubmitError(null)
     try {
       const dataToSubmit = {
         ...formData,
@@ -76,7 +79,7 @@ export default function StockForm({
       onSuccess()
     } catch (error) {
       console.error(error)
-      alert("Ocurrió un error al guardar")
+      setSubmitError("Ocurrió un error al guardar")
     } finally {
       setLoading(false)
     }
@@ -135,30 +138,15 @@ export default function StockForm({
         <div className="md:col-span-2 grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Precio Lista</label>
-            <ImporteInput
-              value={formData.precioLista}
-              onChange={handlePrecio("precioLista")}
-              required
-              className={inputCls}
-            />
+            <ImporteInput value={formData.precioLista} onChange={handlePrecio("precioLista")} required className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Precio Costo</label>
-            <ImporteInput
-              value={formData.precioCosto}
-              onChange={handlePrecio("precioCosto")}
-              required
-              className={inputCls}
-            />
+            <ImporteInput value={formData.precioCosto} onChange={handlePrecio("precioCosto")} required className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Precio Venta</label>
-            <ImporteInput
-              value={formData.precioVenta}
-              onChange={handlePrecio("precioVenta")}
-              required
-              className={inputCls}
-            />
+            <ImporteInput value={formData.precioVenta} onChange={handlePrecio("precioVenta")} required className={inputCls} />
           </div>
         </div>
 
@@ -172,6 +160,10 @@ export default function StockForm({
           <input type="date" name="fechaRecibido" value={formData.fechaRecibido} onChange={handleChange} className={inputCls} />
         </div>
       </div>
+
+      {submitError && (
+        <ErrorBanner message={submitError} onDismiss={() => setSubmitError(null)} />
+      )}
 
       <div className="pt-2 flex justify-end">
         <button

@@ -5,6 +5,8 @@ import { Barcode, Loader2, Trash2, PackageOpen, Check } from "lucide-react"
 import { createFacturaAction } from "@/modules/facturas/actions"
 import ImporteInput from "@/components/ui/ImporteInput"
 import { useRouter } from "next/navigation"
+import { ErrorBanner } from "@/components/ui/ErrorBanner"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 
 type StockResult = {
   id: string
@@ -35,6 +37,8 @@ export default function RecepcionPageClient({ proveedores }: { proveedores: Prov
   const [suggestions, setSuggestions] = useState<StockResult[]>([])
   const [searching, setSearching] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [confirmZeroImporte, setConfirmZeroImporte] = useState(false)
 
   const searchRef = useRef<HTMLInputElement>(null)
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({})
@@ -116,14 +120,7 @@ export default function RecepcionPageClient({ proveedores }: { proveedores: Prov
     setItems(prev => prev.filter(i => i.stockId !== stockId))
   }
 
-  const handleSubmit = async () => {
-    if (!proveedorId) { alert("Seleccioná un proveedor"); return }
-    if (!numero.trim()) { alert("Ingresá el número de factura o remito"); return }
-    if (items.length === 0) { alert("Agregá al menos un artículo"); return }
-    if (!importe || Number(importe) <= 0) {
-      if (!confirm("El importe es $0. ¿Confirmar el ingreso de todas formas?")) return
-    }
-
+  const doSubmit = async () => {
     setLoading(true)
     try {
       const result = await createFacturaAction({
@@ -135,11 +132,20 @@ export default function RecepcionPageClient({ proveedores }: { proveedores: Prov
       if (result.success) {
         router.push("/dashboard/facturas")
       } else {
-        alert(result.error)
+        setFormError(result.error ?? "No se pudo registrar la recepción")
       }
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async () => {
+    setFormError(null)
+    if (!proveedorId) { setFormError("Seleccioná un proveedor"); return }
+    if (!numero.trim()) { setFormError("Ingresá el número de factura o remito"); return }
+    if (items.length === 0) { setFormError("Agregá al menos un artículo"); return }
+    if (!importe || Number(importe) <= 0) { setConfirmZeroImporte(true); return }
+    await doSubmit()
   }
 
   return (
@@ -297,6 +303,17 @@ export default function RecepcionPageClient({ proveedores }: { proveedores: Prov
             </div>
           </div>
 
+          {formError && (
+            <ErrorBanner message={formError} onDismiss={() => setFormError(null)} />
+          )}
+          <ConfirmDialog
+            open={confirmZeroImporte}
+            title="¿Confirmar sin importe?"
+            description="El importe es $0. ¿Confirmar el ingreso de mercadería de todas formas?"
+            confirmLabel="Confirmar igual"
+            onConfirm={async () => { setConfirmZeroImporte(false); await doSubmit() }}
+            onCancel={() => setConfirmZeroImporte(false)}
+          />
           <button
             type="button"
             onClick={handleSubmit}

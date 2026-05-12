@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createProveedorAction, updateProveedorAction } from "../actions"
 import { X, Plus } from "lucide-react"
+import { ErrorBanner } from "@/components/ui/ErrorBanner"
 
 type Descuento = { id?: string; descripcion: string; porcentaje: number }
 
@@ -17,6 +18,7 @@ export default function ProveedorForm({
   const [notas, setNotas] = useState(proveedor?.notas || "")
   const [descuentos, setDescuentos] = useState<Descuento[]>(proveedor?.descuentos || [])
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleAddDescuento = () => {
     setDescuentos([...descuentos, { descripcion: "", porcentaje: 0 }])
@@ -35,6 +37,7 @@ export default function ProveedorForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setSubmitError(null)
     try {
       const data = { nombre, notas, descuentos }
       if (proveedor?.id) {
@@ -45,7 +48,7 @@ export default function ProveedorForm({
       onSuccess()
     } catch (error) {
       console.error(error)
-      alert("Ocurrió un error al guardar")
+      setSubmitError("Ocurrió un error al guardar")
     } finally {
       setLoading(false)
     }
@@ -127,6 +130,10 @@ export default function ProveedorForm({
           )}
         </div>
       </div>
+
+      {submitError && (
+        <ErrorBanner message={submitError} onDismiss={() => setSubmitError(null)} />
+      )}
 
       <div className="pt-2 flex justify-end">
         <button
