@@ -1,55 +1,59 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import StockList from "@/modules/stock/components/StockList"
 import StockForm from "@/modules/stock/components/StockForm"
 import * as Dialog from "@radix-ui/react-dialog"
-import { Plus, X, Search, Loader2 } from "lucide-react"
+import { Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react"
 
 export default function StockPageClient({
-  initialStock,
-  proveedores
+  stock,
+  total,
+  pages,
+  currentPage,
+  proveedores,
+  initialProveedorId,
+  initialCodigo,
 }: {
-  initialStock: any[],
+  stock: any[]
+  total: number
+  pages: number
+  currentPage: number
   proveedores: any[]
+  initialProveedorId: string
+  initialCodigo: string
 }) {
+  const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedStock, setSelectedStock] = useState<any>(null)
-  const [filteredStock, setFilteredStock] = useState(initialStock)
-  const [searchProveedorId, setSearchProveedorId] = useState("")
-  const [searchCodigo, setSearchCodigo] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
+  const [proveedorId, setProveedorId] = useState(initialProveedorId)
+  const [codigo, setCodigo] = useState(initialCodigo)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  // Debounced search
-  useEffect(() => {
-    if (!searchProveedorId && !searchCodigo) {
-      setFilteredStock(initialStock)
-      return
-    }
+  useEffect(() => { setProveedorId(initialProveedorId) }, [initialProveedorId])
+  useEffect(() => { setCodigo(initialCodigo) }, [initialCodigo])
 
-    const timer = setTimeout(async () => {
-      setIsSearching(true)
-      try {
-        const params = new URLSearchParams()
-        if (searchProveedorId) params.set("proveedorId", searchProveedorId)
-        if (searchCodigo) params.set("codigo", searchCodigo)
+  function navigate(updates: { proveedorId?: string; codigo?: string; page?: string }) {
+    const params = new URLSearchParams()
+    const nextProveedorId = updates.proveedorId !== undefined ? updates.proveedorId : proveedorId
+    const nextCodigo = updates.codigo !== undefined ? updates.codigo : codigo
+    const nextPage = updates.page ?? "1"
 
-        const res = await fetch(`/api/stock/search?${params}`)
-        if (res.ok) setFilteredStock(await res.json())
-      } finally {
-        setIsSearching(false)
-      }
+    if (nextProveedorId) params.set("proveedorId", nextProveedorId)
+    if (nextCodigo) params.set("codigo", nextCodigo)
+    if (Number(nextPage) > 1) params.set("page", nextPage)
+
+    router.push(`/dashboard/stock?${params.toString()}`)
+  }
+
+  const handleCodigoChange = (value: string) => {
+    setCodigo(value)
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      navigate({ codigo: value, page: "1" })
     }, 400)
-
-    return () => clearTimeout(timer)
-  }, [searchProveedorId, searchCodigo, initialStock])
-
-  // Sync with fresh server data when no search is active
-  useEffect(() => {
-    if (!searchProveedorId && !searchCodigo) {
-      setFilteredStock(initialStock)
-    }
-  }, [initialStock]) // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   const handleOpenNew = () => {
     setSelectedStock(null)
@@ -72,10 +76,9 @@ export default function StockPageClient({
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Stock</h1>
           <p className="mt-1 text-slate-500">
-            {initialStock.length === 0
+            {total === 0
               ? "Sin piezas registradas"
-              : `${initialStock.length} pieza${initialStock.length !== 1 ? "s" : ""} en inventario`
-            }
+              : `${total} pieza${total !== 1 ? "s" : ""} en inventario`}
           </p>
         </div>
         <button
@@ -87,11 +90,13 @@ export default function StockPageClient({
         </button>
       </div>
 
-      {/* Buscador */}
       <div className="flex flex-wrap items-center gap-2">
         <select
-          value={searchProveedorId}
-          onChange={e => setSearchProveedorId(e.target.value)}
+          value={proveedorId}
+          onChange={e => {
+            setProveedorId(e.target.value)
+            navigate({ proveedorId: e.target.value, page: "1" })
+          }}
           className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
         >
           <option value="">Todos los proveedores</option>
@@ -105,16 +110,40 @@ export default function StockPageClient({
           <input
             type="text"
             placeholder="Código..."
-            value={searchCodigo}
-            onChange={e => setSearchCodigo(e.target.value)}
+            value={codigo}
+            onChange={e => handleCodigoChange(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white pl-8 pr-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition w-72"
           />
         </div>
-
-        {isSearching && <Loader2 size={15} className="animate-spin text-slate-400" />}
       </div>
 
-      <StockList stock={filteredStock} onEdit={handleOpenEdit} />
+      <StockList stock={stock} onEdit={handleOpenEdit} />
+
+      {pages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Página {currentPage} de {pages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate({ page: String(currentPage - 1) })}
+              disabled={currentPage <= 1}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              <ChevronLeft size={15} />
+              Anterior
+            </button>
+            <button
+              onClick={() => navigate({ page: String(currentPage + 1) })}
+              disabled={currentPage >= pages}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              Siguiente
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
         <Dialog.Portal>
