@@ -2,6 +2,7 @@
 
 import { VentaRepository } from '@/repositories/venta.repository'
 import { GastoRepository } from '@/repositories/gasto.repository'
+import { RepuestoPedidoRepository } from '@/repositories/repuestoPedido.repository'
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
@@ -62,10 +63,6 @@ export async function checkoutAction(data: {
         include: { items: { include: { stock: true } } },
       })
       for (const item of data.carrito) {
-        const stock = await tx.stock.findUnique({ where: { id: item.stockId }, select: { cantidad: true } })
-        if (!stock || stock.cantidad < item.cantidad) {
-          throw new Error(`Stock insuficiente para "${item.descripcion}"`)
-        }
         await tx.stock.update({
           where: { id: item.stockId },
           data: { cantidad: { decrement: item.cantidad } },
@@ -94,9 +91,9 @@ export async function crearPedidosAction(
   pedidos: { stockId: string; cantidad: number }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await prisma.repuestoPedido.createMany({
-      data: pedidos.map(p => ({ stockId: p.stockId, cantidad: p.cantidad })),
-    })
+    for (const p of pedidos) {
+      await RepuestoPedidoRepository.upsertPendiente(p)
+    }
     revalidatePath('/dashboard/pedidos')
     return { success: true }
   } catch (error) {

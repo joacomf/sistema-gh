@@ -40,7 +40,7 @@ export async function createRepuestoPedidoAction(data: {
   cantidad: number
 }) {
   try {
-    const record = await RepuestoPedidoRepository.create(data)
+    const record = await RepuestoPedidoRepository.upsertPendiente(data)
     revalidatePath("/dashboard/pedidos")
     return { success: true, data: record }
   } catch (error) {

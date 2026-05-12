@@ -25,7 +25,17 @@ export const RepuestoPedidoRepository = {
     })
   },
 
-  async create(data: { stockId: string; cantidad: number }) {
+  async upsertPendiente(data: { stockId: string; cantidad: number }) {
+    const existing = await prisma.repuestoPedido.findFirst({
+      where: { stockId: data.stockId, fechaPedido: null },
+    })
+    if (existing) {
+      return prisma.repuestoPedido.update({
+        where: { id: existing.id },
+        data: { cantidad: { increment: data.cantidad } },
+        include: { stock: { include: { proveedor: true } } },
+      })
+    }
     return prisma.repuestoPedido.create({
       data,
       include: { stock: { include: { proveedor: true } } },
