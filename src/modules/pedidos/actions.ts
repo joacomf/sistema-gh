@@ -40,9 +40,9 @@ export async function createRepuestoPedidoAction(data: {
   cantidad: number
 }) {
   try {
-    const record = await RepuestoPedidoRepository.upsertPendiente(data)
+    await RepuestoPedidoRepository.upsertPendiente(data)
     revalidatePath("/dashboard/pedidos")
-    return { success: true, data: record }
+    return { success: true }
   } catch (error) {
     console.error("Error al crear repuesto pedido:", error)
     return { success: false, error: "No se pudo agregar el repuesto" }

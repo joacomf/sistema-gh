@@ -157,21 +157,21 @@ export default function RecepcionPageClient({ proveedores }: { proveedores: Prov
 
       {/* Buscador — fuera de los paneles */}
       <div className="relative mb-4">
-        <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl px-4 py-3.5 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] transition-all shadow-sm">
-          <Barcode size={20} className="text-slate-400 shrink-0" />
+        <div className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition ${!proveedorId ? "border-slate-200 bg-slate-50" : "border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20"}`}>
+          <Barcode size={15} className="text-slate-400 shrink-0" />
           <input
             ref={searchRef}
             type="text"
             value={query}
             onChange={e => handleQueryChange(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Escaneá o buscá por código / descripción..."
-            className="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-900 placeholder:text-slate-400"
+            placeholder={!proveedorId ? "Seleccioná un proveedor primero..." : "Escaneá o buscá por código / descripción..."}
+            className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed"
             autoComplete="off"
-            autoFocus
+            disabled={!proveedorId}
           />
           {searching && (
-            <Loader2 size={16} className="animate-spin text-slate-400 shrink-0" />
+            <Loader2 size={14} className="animate-spin text-slate-400 shrink-0" />
           )}
         </div>
 

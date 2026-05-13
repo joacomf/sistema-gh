@@ -19,6 +19,7 @@ export default async function LibroDiarioPage({ searchParams }: { searchParams: 
     importe: v.importe.toNumber(),
     items: v.items.map(i => ({
       ...i,
+      precioCosto: i.precioCosto.toNumber(),
       precioUnitario: i.precioUnitario.toNumber(),
       subtotal: i.subtotal.toNumber(),
       stock: {
