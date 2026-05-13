@@ -57,7 +57,7 @@ export default function FacturasList({ facturas }: { facturas: any[] }) {
                     <Importe value={Number(factura.importe)} />
                   </td>
                   <td className="px-4 py-4 text-sm text-slate-500">
-                    {new Date(factura.createdAt).toLocaleDateString("es-AR")}
+                    {new Date(factura.createdAt).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
                   </td>
                   <td className="px-4 py-4 pr-6 text-right">
                     <span className="inline-flex items-center justify-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">

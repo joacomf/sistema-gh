@@ -20,7 +20,7 @@ const METODO_BADGE: Record<string, { label: string; cls: string }> = {
 }
 
 function toHora(fecha: Date | string) {
-  return new Date(fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  return new Date(fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires' })
 }
 
 type Props = { ventas: Venta[]; gastos: Gasto[]; fecha: string }

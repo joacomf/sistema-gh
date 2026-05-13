@@ -6,7 +6,7 @@ type SearchParams = Promise<{ fecha?: string }>
 
 export default async function LibroDiarioPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
-  const fechaStr = params.fecha ?? new Date().toISOString().split('T')[0]
+  const fechaStr = params.fecha ?? new Date().toLocaleDateString('sv')
   const fecha = new Date(`${fechaStr}T00:00:00`)
 
   const [ventasRaw, gastosRaw] = await Promise.all([

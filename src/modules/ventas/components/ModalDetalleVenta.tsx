@@ -45,7 +45,7 @@ type Props = {
 
 export function ModalDetalleVenta({ venta, onClose }: Props) {
   const fecha = new Date(venta.fecha)
-  const hora = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  const hora = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires' })
   const subtotalBase = venta.items.reduce((acc, i) => acc + i.subtotal, 0)
   const recargo = venta.importe - subtotalBase
   const tieneRecargo = venta.metodoPago === 'CREDITO' && recargo > 0.005

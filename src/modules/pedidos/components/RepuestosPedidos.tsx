@@ -72,7 +72,7 @@ export default function RepuestosPedidos({ items }: { items: any[] }) {
                 <td className="px-4 py-4 text-sm text-slate-700">{item.stock.descripcion}</td>
                 <td className="px-4 py-4 text-sm text-slate-500 whitespace-nowrap">
                   {item.fechaPedido
-                    ? new Date(item.fechaPedido).toLocaleDateString("es-AR")
+                    ? new Date(item.fechaPedido).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })
                     : "—"}
                 </td>
                 <td className="py-4 pl-3 pr-6">
