@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from 'react'
-import { Search, Loader2, Check } from 'lucide-react'
+import { Search, Loader2, Check, Printer } from 'lucide-react'
 import { Carrito, CarritoItem } from '@/modules/ventas/components/Carrito'
 import { SelectorMetodoPago, MetodoPago } from '@/modules/ventas/components/SelectorMetodoPago'
 import { ModalReposicion } from '@/modules/ventas/components/ModalReposicion'
@@ -13,6 +13,7 @@ type StockResult = {
   id: string
   codigo: string
   descripcion: string
+  cantidad: number
   precioCosto: number
   precioVenta: number
   proveedor: { nombre: string }
@@ -106,13 +107,16 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
     }
   }
 
-  const handleFinalize = async () => {
+  const handleFinalize = async (print = false) => {
     if (carrito.length === 0) return
     setCheckoutError(null)
     setLoading(true)
     try {
       const result = await checkoutAction({ carrito, metodoPago, facturada, recargo })
       if (result.success && result.data) {
+        if (print) {
+          window.open(`/ticket/${result.data.ventaId}`, '_blank', 'width=420,height=680')
+        }
         setReposicionItems(result.data.reposicion)
         setCarrito([])
         setFacturada(false)
@@ -147,21 +151,21 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
         <p className="mt-1 text-slate-500">Buscá artículos para agregar a la venta.</p>
       </div>
 
-      <div className="relative mb-4">
-        <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl px-4 py-3.5 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] transition-all shadow-sm">
-          <Search size={20} className="text-slate-400 shrink-0" />
+      <div className="relative mb-6">
+        <div className="flex items-center gap-4 bg-white border-[3px] border-blue-500 rounded-2xl px-5 py-4 shadow-[0_0_0_5px_rgba(37,99,235,0.1)] transition-all">
+          <Search size={24} className="text-blue-500 shrink-0" />
           <input
             ref={searchRef}
             type="text"
             value={query}
             onChange={e => handleQueryChange(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Buscá por código o descripción..."
-            className="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-900 placeholder:text-slate-400"
+            placeholder="Escanear o buscar por número de pieza..."
+            className="flex-1 bg-transparent border-none outline-none text-xl font-bold text-slate-900 placeholder:text-slate-300 placeholder:font-normal"
             autoComplete="off"
             autoFocus
           />
-          {searching && <Loader2 size={16} className="animate-spin text-slate-400 shrink-0" />}
+          {searching && <Loader2 size={18} className="animate-spin text-blue-400 shrink-0" />}
         </div>
 
         {suggestions.length > 0 && (
@@ -172,17 +176,29 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
                 type="button"
                 onClick={() => addToCarrito(item)}
                 className={cn(
-                  'w-full flex items-center justify-between px-4 py-3 border-b border-slate-50 last:border-0 transition-colors text-left',
+                  'w-full flex items-center justify-between px-4 py-3.5 border-b border-slate-50 last:border-0 transition-colors text-left',
                   idx === 0 ? 'bg-blue-50' : 'hover:bg-blue-50'
                 )}
               >
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm">{item.descripcion}</p>
-                  <p className="text-xs text-slate-400 font-mono mt-0.5">{item.codigo}</p>
+                <div className="min-w-0">
+                  <p className="font-black text-slate-900 font-mono text-base leading-tight">{item.codigo}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">{item.descripcion}</p>
                 </div>
-                <span className="text-sm font-bold text-blue-700 shrink-0 ml-4">
-                  <Importe value={item.precioVenta} />
-                </span>
+                <div className="flex items-center gap-2.5 shrink-0 ml-4">
+                  <span className={cn(
+                    'text-xs font-semibold rounded-full px-2.5 py-0.5 tabular-nums',
+                    item.cantidad <= 0
+                      ? 'bg-red-100 text-red-600'
+                      : item.cantidad <= 3
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                  )}>
+                    {item.cantidad} en stock
+                  </span>
+                  <span className="text-sm font-bold text-blue-700">
+                    <Importe value={item.precioVenta} />
+                  </span>
+                </div>
               </button>
             ))}
           </div>
@@ -234,15 +250,26 @@ export default function VentasPageClient({ recargo }: { recargo: number }) {
           </label>
 
           <div className="space-y-2">
-            <button
-              type="button"
-              onClick={handleFinalize}
-              disabled={loading || carrito.length === 0}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:bg-emerald-600 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
-            >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-              {loading ? 'Registrando...' : 'Finalizar venta'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleFinalize(false)}
+                disabled={loading || carrito.length === 0}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:bg-emerald-600 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                {loading ? 'Registrando...' : 'Finalizar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFinalize(true)}
+                disabled={loading || carrito.length === 0}
+                title="Finalizar e imprimir ticket"
+                className="flex items-center justify-center rounded-xl bg-slate-700 px-4 py-3.5 text-white hover:bg-slate-800 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
+              >
+                <Printer size={16} />
+              </button>
+            </div>
             {checkoutError && (
               <p className="text-xs text-red-600 text-center">{checkoutError}</p>
             )}

@@ -28,6 +28,13 @@ export const VentaRepository = {
     })
   },
 
+  async findById(id: string): Promise<VentaWithItems | null> {
+    return prisma.venta.findUnique({
+      where: { id },
+      include: { items: { include: { stock: true } } },
+    })
+  },
+
   async deleteById(id: string): Promise<void> {
     await prisma.venta.delete({ where: { id } })
   },

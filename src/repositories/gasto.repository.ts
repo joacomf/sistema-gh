@@ -32,6 +32,16 @@ export const GastoRepository = {
     })
   },
 
+  async update(id: string, data: { descripcion: string; importe: number }): Promise<Gasto> {
+    return prisma.gasto.update({
+      where: { id },
+      data: {
+        descripcion: data.descripcion,
+        importe: new Prisma.Decimal(data.importe),
+      },
+    })
+  },
+
   async deleteById(id: string): Promise<void> {
     await prisma.gasto.delete({ where: { id } })
   },

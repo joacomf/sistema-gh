@@ -1,5 +1,6 @@
 import { VentaRepository } from '@/repositories/venta.repository'
 import { GastoRepository } from '@/repositories/gasto.repository'
+import { ConfiguracionRepository } from '@/repositories/configuracion.repository'
 import LibroDiarioPageClient from './LibroDiarioPageClient'
 
 type SearchParams = Promise<{ fecha?: string }>
@@ -9,10 +10,12 @@ export default async function LibroDiarioPage({ searchParams }: { searchParams: 
   const fechaStr = params.fecha ?? new Date().toLocaleDateString('sv')
   const fecha = new Date(`${fechaStr}T00:00:00`)
 
-  const [ventasRaw, gastosRaw] = await Promise.all([
+  const [ventasRaw, gastosRaw, recargoStr] = await Promise.all([
     VentaRepository.findByFecha(fecha),
     GastoRepository.findByFecha(fecha),
+    ConfiguracionRepository.findByKey('recargo_tarjeta'),
   ])
+  const recargo = parseFloat(recargoStr ?? '') || 10
 
   const ventas = ventasRaw.map(v => ({
     ...v,
@@ -36,5 +39,5 @@ export default async function LibroDiarioPage({ searchParams }: { searchParams: 
     importe: g.importe.toNumber(),
   }))
 
-  return <LibroDiarioPageClient ventas={ventas} gastos={gastos} fecha={fechaStr} />
+  return <LibroDiarioPageClient ventas={ventas} gastos={gastos} fecha={fechaStr} recargo={recargo} />
 }

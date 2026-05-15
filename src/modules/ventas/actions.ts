@@ -102,6 +102,50 @@ export async function crearPedidosAction(
   }
 }
 
+export async function editarVentaAction(data: {
+  id: string
+  metodoPago: string
+  facturada: boolean
+  items: { id: string; precioUnitario: number; cantidad: number }[]
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const baseTotal = data.items.reduce((acc, i) => acc + i.precioUnitario * i.cantidad, 0)
+
+    let importe = baseTotal
+    if (data.metodoPago === 'CREDITO') {
+      const row = await prisma.configuracion.findUnique({ where: { clave: 'recargo_tarjeta' } })
+      const recargo = parseFloat(row?.valor ?? '0') || 0
+      importe = baseTotal * (1 + recargo / 100)
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const item of data.items) {
+        await tx.ventaItem.update({
+          where: { id: item.id },
+          data: {
+            precioUnitario: new Prisma.Decimal(item.precioUnitario),
+            subtotal: new Prisma.Decimal(item.precioUnitario * item.cantidad),
+          },
+        })
+      }
+      await tx.venta.update({
+        where: { id: data.id },
+        data: {
+          metodoPago: data.metodoPago as 'EFECTIVO' | 'DEBITO' | 'CREDITO' | 'MERCADO_PAGO',
+          facturada: data.facturada,
+          importe: new Prisma.Decimal(importe),
+        },
+      })
+    })
+
+    revalidatePath('/dashboard/libro-diario')
+    return { success: true }
+  } catch (error) {
+    console.error('Error al editar venta:', error)
+    return { success: false, error: 'No se pudo actualizar la venta' }
+  }
+}
+
 export async function eliminarVentaAction(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -126,6 +170,21 @@ export async function agregarGastoAction(data: {
   } catch (error) {
     console.error('Error al agregar gasto:', error)
     return { success: false, error: 'No se pudo registrar el gasto' }
+  }
+}
+
+export async function editarGastoAction(data: {
+  id: string
+  descripcion: string
+  importe: number
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    await GastoRepository.update(data.id, { descripcion: data.descripcion, importe: data.importe })
+    revalidatePath('/dashboard/libro-diario')
+    return { success: true }
+  } catch (error) {
+    console.error('Error al editar gasto:', error)
+    return { success: false, error: 'No se pudo actualizar el gasto' }
   }
 }
 
