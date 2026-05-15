@@ -48,7 +48,7 @@ export async function createStockAction(data: {
   precioCosto: number;
   precioLista: number;
   precioVenta: number;
-  imagen?: string;
+  imagen?: string | null;
 }) {
   try {
     const stock = await StockRepository.create(data)

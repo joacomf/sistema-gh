@@ -40,7 +40,7 @@ export const StockRepository = {
     precioCosto: number;
     precioLista: number;
     precioVenta: number;
-    imagen?: string;
+    imagen?: string | null;
   }) {
     return prisma.stock.create({
       data: {

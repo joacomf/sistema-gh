@@ -71,7 +71,7 @@ export default function StockForm({
         precioVenta: Number(formData.precioVenta),
         fechaPedido: formData.fechaPedido ? new Date(formData.fechaPedido) : undefined,
         fechaRecibido: formData.fechaRecibido ? new Date(formData.fechaRecibido) : undefined,
-        imagen: formData.imagen || undefined,
+        imagen: formData.imagen || null,
       }
       if (stock?.id) {
         await updateStockAction(stock.id, dataToSubmit)
