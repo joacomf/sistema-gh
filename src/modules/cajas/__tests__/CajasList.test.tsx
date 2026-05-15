@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import CajasList from '../components/CajasList'
 
+const mockRefresh = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: mockRefresh }),
+}))
+
 jest.mock('../actions', () => ({
   deleteCajaAction: jest.fn(),
 }))

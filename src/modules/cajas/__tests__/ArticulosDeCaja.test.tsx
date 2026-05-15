@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ArticulosDeCaja from '../components/ArticulosDeCaja'
 
+const mockRefresh = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: mockRefresh }),
+}))
+
 jest.mock('../actions', () => ({
   removeStockDeCajaAction: jest.fn(),
 }))

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Search, Trash2 } from "lucide-react"
 import { removeStockDeCajaAction } from "../actions"
 import { ErrorBanner } from "@/components/ui/ErrorBanner"
@@ -26,6 +27,7 @@ export default function ArticulosDeCaja({
   articulos: StockItem[]
   onAsignar: () => void
 }) {
+  const router = useRouter()
   const [q, setQ] = useState("")
   const [confirmStockId, setConfirmStockId] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
@@ -46,7 +48,11 @@ export default function ArticulosDeCaja({
     setRemoving(id)
     const result = await removeStockDeCajaAction(cajaId, id)
     setRemoving(null)
-    if (!result.success) setError(result.error ?? "Error al quitar artículo")
+    if (!result.success) {
+      setError(result.error ?? "Error al quitar artículo")
+    } else {
+      router.refresh()
+    }
   }
 
   return (

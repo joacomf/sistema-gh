@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Pencil, Trash2, Box } from "lucide-react"
 import { deleteCajaAction } from "../actions"
 import { ErrorBanner } from "@/components/ui/ErrorBanner"
@@ -24,6 +25,7 @@ export default function CajasList({
   onSelect: (id: string) => void
   onEdit: (caja: Caja) => void
 }) {
+  const router = useRouter()
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -35,7 +37,11 @@ export default function CajasList({
     setDeleting(id)
     const result = await deleteCajaAction(id)
     setDeleting(null)
-    if (!result.success) setError(result.error ?? "Error al eliminar")
+    if (!result.success) {
+      setError(result.error ?? "Error al eliminar")
+    } else {
+      router.refresh()
+    }
   }
 
   return (
