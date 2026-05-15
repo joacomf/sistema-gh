@@ -18,6 +18,8 @@ const menu = [
       { name: "Pedidos", href: "/dashboard/pedidos" },
       { name: "Facturas", href: "/dashboard/facturas" },
       { name: "Recepción", href: "/dashboard/recepcion" },
+      { name: "Cajas", href: "/dashboard/cajas" },
+      { name: "Consulta Artículo", href: "/dashboard/consulta-articulo" },
     ]
   },
   {
