@@ -46,6 +46,8 @@ model Stock {
   precioVenta      Decimal   @default(0) @db.Decimal(10, 2)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  imagen           String?   @db.VarChar(500)
+  cajas            StockCaja[]
 
   proveedor        Proveedor        @relation(fields: [proveedorId], references: [id])
   repuestosPedido  RepuestoPedido[]
@@ -132,4 +134,22 @@ model Gasto {
 model Configuracion {
   clave String @id
   valor String @db.VarChar(500)
+}
+
+model Caja {
+  id        String      @id @default(uuid())
+  nombre    String      @db.VarChar(255)
+  ubicacion String      @db.VarChar(255)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  stocks    StockCaja[]
+}
+
+model StockCaja {
+  stockId String
+  cajaId  String
+  stock   Stock  @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  caja    Caja   @relation(fields: [cajaId], references: [id], onDelete: Cascade)
+
+  @@id([stockId, cajaId])
 }
