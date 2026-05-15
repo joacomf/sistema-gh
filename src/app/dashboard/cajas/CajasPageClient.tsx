@@ -71,7 +71,7 @@ export default function CajasPageClient({
 
   const handleOpenNew = () => { setEditingCaja(null); setIsFormOpen(true) }
   const handleOpenEdit = (caja: Caja) => { setEditingCaja(caja); setIsFormOpen(true) }
-  const handleFormClose = () => { setIsFormOpen(false); setEditingCaja(null) }
+  const handleFormClose = () => { setIsFormOpen(false); setEditingCaja(null); router.refresh() }
 
   return (
     <div className="flex h-full gap-0 -m-6 min-h-[calc(100vh-4rem)]">
@@ -147,7 +147,7 @@ export default function CajasPageClient({
               </Dialog.Close>
             </div>
             <div className="px-6 py-5">
-              <CajaForm caja={editingCaja} onSuccess={handleFormClose} />
+              <CajaForm key={editingCaja?.id ?? "new"} caja={editingCaja} onSuccess={handleFormClose} />
             </div>
           </Dialog.Content>
         </Dialog.Portal>
