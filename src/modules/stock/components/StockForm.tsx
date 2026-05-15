@@ -29,6 +29,7 @@ export default function StockForm({
     precioVenta: stock?.precioVenta ? Number(stock.precioVenta) : 0,
     fechaPedido: stock?.fechaPedido ? new Date(stock.fechaPedido).toISOString().split("T")[0] : "",
     fechaRecibido: stock?.fechaRecibido ? new Date(stock.fechaRecibido).toISOString().split("T")[0] : "",
+    imagen: stock?.imagen || "",
   })
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -70,6 +71,7 @@ export default function StockForm({
         precioVenta: Number(formData.precioVenta),
         fechaPedido: formData.fechaPedido ? new Date(formData.fechaPedido) : undefined,
         fechaRecibido: formData.fechaRecibido ? new Date(formData.fechaRecibido) : undefined,
+        imagen: formData.imagen || undefined,
       }
       if (stock?.id) {
         await updateStockAction(stock.id, dataToSubmit)
@@ -158,6 +160,26 @@ export default function StockForm({
         <div>
           <label className="block text-sm font-medium text-gray-700">Fecha Recibido</label>
           <input type="date" name="fechaRecibido" value={formData.fechaRecibido} onChange={handleChange} className={inputCls} />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">URL de Imagen</label>
+          <input
+            type="url"
+            name="imagen"
+            value={formData.imagen}
+            onChange={handleChange}
+            className={inputCls}
+            placeholder="https://..."
+          />
+          {formData.imagen && (
+            <img
+              src={formData.imagen}
+              alt="Preview"
+              className="mt-2 h-24 w-auto rounded-md object-contain border border-slate-200 bg-slate-50"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          )}
         </div>
       </div>
 
