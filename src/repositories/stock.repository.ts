@@ -5,6 +5,13 @@ export type StockWithProveedor = Prisma.StockGetPayload<{
   include: { proveedor: true }
 }>
 
+export type StockWithCajas = Prisma.StockGetPayload<{
+  include: {
+    proveedor: true
+    cajas: { include: { caja: true } }
+  }
+}>
+
 export const StockRepository = {
   async findAll(): Promise<StockWithProveedor[]> {
     return prisma.stock.findMany({
@@ -33,6 +40,7 @@ export const StockRepository = {
     precioCosto: number;
     precioLista: number;
     precioVenta: number;
+    imagen?: string;
   }) {
     return prisma.stock.create({
       data: {
@@ -58,6 +66,7 @@ export const StockRepository = {
     precioCosto?: number;
     precioLista?: number;
     precioVenta?: number;
+    imagen?: string | null;
   }) {
     const updateData: any = { ...data };
     
@@ -75,6 +84,34 @@ export const StockRepository = {
   async delete(id: string) {
     return prisma.stock.delete({
       where: { id }
+    })
+  },
+
+  async findByIdWithCajas(id: string): Promise<StockWithCajas | null> {
+    return prisma.stock.findUnique({
+      where: { id },
+      include: {
+        proveedor: true,
+        cajas: { include: { caja: true } }
+      }
+    })
+  },
+
+  async searchWithCajas(q: string): Promise<StockWithCajas[]> {
+    return prisma.stock.findMany({
+      where: {
+        OR: [
+          { codigo: { contains: q } },
+          { codigoOriginal: { contains: q } },
+          { descripcion: { contains: q } },
+        ]
+      },
+      include: {
+        proveedor: true,
+        cajas: { include: { caja: true } }
+      },
+      orderBy: { descripcion: 'asc' },
+      take: 20,
     })
   },
 
