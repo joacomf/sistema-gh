@@ -145,4 +145,25 @@ export class DashboardPage {
     // Wait for reposition modal
     await expect(this.page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
   }
+
+  async goToCajas() {
+    await this.page.getByText('Gestión').click();
+    await this.page.getByRole('link', { name: 'Cajas' }).click();
+    await expect(this.page.getByRole('heading', { name: 'Cajas', level: 2 })).toBeVisible();
+  }
+
+  async createCaja(nombre: string, ubicacion: string) {
+    await this.page.getByRole('button', { name: /nueva/i }).click();
+    await this.page.getByPlaceholder('Ej: Caja A-1').fill(nombre);
+    await this.page.getByPlaceholder('Ej: Depósito Planta Baja').fill(ubicacion);
+    await this.page.getByRole('button', { name: /guardar caja/i }).click();
+    await expect(this.page.getByRole('dialog')).not.toBeVisible();
+    await expect(this.page.getByText(nombre)).toBeVisible();
+  }
+
+  async goToConsultaArticulo() {
+    await this.page.getByText('Gestión').click();
+    await this.page.getByRole('link', { name: 'Consulta Artículo' }).click();
+    await expect(this.page.getByRole('heading', { name: 'Consulta de Artículo' })).toBeVisible();
+  }
 }
