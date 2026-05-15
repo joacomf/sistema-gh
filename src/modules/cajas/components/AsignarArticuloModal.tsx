@@ -10,7 +10,6 @@ type StockResult = {
   id: string
   codigo: string
   descripcion: string
-  cantidad: number
   proveedor: string
 }
 
@@ -29,16 +28,24 @@ export default function AsignarArticuloModal({
   const [assigning, setAssigning] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const searchCounterRef = useRef(0)
 
   const handleSearch = (value: string) => {
     setQ(value)
     clearTimeout(debounceRef.current)
-    if (!value.trim()) { setResults([]); return }
+    if (!value.trim()) { setResults([]); setLoading(false); return }
+    setLoading(true)
     debounceRef.current = setTimeout(async () => {
-      setLoading(true)
+      const counter = ++searchCounterRef.current
       const res = await buscarStockParaCajaAction(value, cajaId)
+      if (counter !== searchCounterRef.current) return
       setLoading(false)
-      if (res.success) setResults(res.data ?? [])
+      if (res.success) {
+        setResults(res.data ?? [])
+      } else {
+        setError(res.error ?? "Error al buscar")
+        setResults([])
+      }
     }, 400)
   }
 
