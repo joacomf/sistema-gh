@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ArticulosDeCaja from '../components/ArticulosDeCaja'
 
 jest.mock('../actions', () => ({
@@ -41,5 +41,16 @@ describe('ArticulosDeCaja', () => {
     render(<ArticulosDeCaja cajaId="c1" articulos={articulos} onAsignar={onAsignar} />)
     fireEvent.click(screen.getByRole('button', { name: /asignar/i }))
     expect(onAsignar).toHaveBeenCalled()
+  })
+
+  it('llama removeStockDeCajaAction al confirmar quitar artículo', async () => {
+    const { removeStockDeCajaAction } = require('../actions')
+    ;(removeStockDeCajaAction as jest.Mock).mockResolvedValue({ success: true })
+    render(<ArticulosDeCaja cajaId="c1" articulos={articulos} onAsignar={() => {}} />)
+    fireEvent.click(screen.getByLabelText('Quitar Tornillo M8'))
+    // ConfirmDialog should be visible
+    const confirmBtn = await screen.findByRole('button', { name: /quitar/i })
+    fireEvent.click(confirmBtn)
+    await waitFor(() => expect(removeStockDeCajaAction).toHaveBeenCalledWith('c1', 's1'))
   })
 })

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import CajasList from '../components/CajasList'
 
 jest.mock('../actions', () => ({
@@ -40,5 +40,16 @@ describe('CajasList', () => {
   it('muestra estado vacío cuando no hay cajas', () => {
     render(<CajasList cajas={[]} selectedId={null} onSelect={() => {}} onEdit={() => {}} />)
     expect(screen.getByText(/no se encontraron cajas/i)).toBeInTheDocument()
+  })
+
+  it('llama deleteCajaAction al confirmar eliminación', async () => {
+    const { deleteCajaAction } = require('../actions')
+    ;(deleteCajaAction as jest.Mock).mockResolvedValue({ success: true })
+    render(<CajasList cajas={cajas} selectedId={null} onSelect={() => {}} onEdit={() => {}} />)
+    fireEvent.click(screen.getByLabelText('Eliminar Caja A-1'))
+    // ConfirmDialog should be visible
+    const confirmBtn = await screen.findByRole('button', { name: /eliminar/i })
+    fireEvent.click(confirmBtn)
+    await waitFor(() => expect(deleteCajaAction).toHaveBeenCalledWith('c1'))
   })
 })
